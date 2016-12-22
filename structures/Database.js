@@ -8,7 +8,14 @@ const userSchema = new Schema({
 	email: { type: String, maxlength: 70 },
 	password: { type: String, maxlength: 70 },
 	username: { type: String, maxlength: 35 },
-	token: String
+	token: String,
+	verified: { type: Boolean, default: false },
+	roles: [{ type: String, enum: ['admin', 'moderator'] }],
+	uploads: { type: Number, default: 0 },
+	likes: [{ type: String, default: [] }],
+	favorites: [{ type: String, default: [] }],
+	likesReceived: { type: Number, default: 0 },
+	favoritesReceived: { type: Number, default: 0 },
 });
 const unverifiedUserSchema = new Schema({
 	email: String,
