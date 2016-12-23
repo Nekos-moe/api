@@ -140,7 +140,7 @@ class APIv1 {
 			})
 		});
 
-		this.router.post('register/resend', async (req, res) => {
+		this.router.post('/register/resend', async (req, res) => {
 			if (!req.body || !req.body.email)
 				return res.status(400).send({
 					code: 400,
@@ -176,7 +176,7 @@ class APIv1 {
 			});
 		});
 
-		this.router.post('auth', async (req, res) => {
+		this.router.post('/auth', async (req, res) => {
 			if (!req.body || !req.body.username || !req.body.password)
 				return res.status(401).send({
 					code: 401,
@@ -207,7 +207,7 @@ class APIv1 {
 			});
 		});
 
-		this.router.post('auth/regen', this.authorize, async (req, res) => {
+		this.router.post('/auth/regen', (req, res, next) => this.authorize(req, res, next), async (req, res) => {
 			// Generate new token
 			let UUID = uuid();
 			let claims = { iss: UUID },
@@ -225,7 +225,7 @@ class APIv1 {
 			});
 		});
 
-		this.router.post('images', this.authorize, upload.single('image'), async (req, res) => {
+		this.router.post('/images', (req, res, next) => this.authorize(req, res, next), upload.single('image'), async (req, res) => {
 			if (!req.file || !req.body)
 				return res.status(400).send({
 					code: 400,
@@ -246,7 +246,7 @@ class APIv1 {
 					message: "Image size must be below 2MB"
 				});
 
-			if (req.body.tags && req.body.tags.find(t => t.length > 20))
+			if (req.body.tags && req.body.tags.split(/ *, */).find(t => t.length > 20))
 				return res.status(400).send({
 					code: 400,
 					message: "Tags have a maximum length of 20 characters"
@@ -267,20 +267,20 @@ class APIv1 {
 					image.resize(image.bitmap.width * .75, jimp.AUTO, jimp.RESIZE_BICUBIC);
 
 				// Save as JPG with quality of 85. This saves a ton of space and is usually unnoticable
-				image.quality(85).write(`${__dirname}/../images/${filename}.jpg`, async () => {
+				image.quality(85).write(`${__dirname}/../image/${filename}.jpg`, async () => {
 					await this.database.Image.create({
 						id: filename,
 						uploader: req.user.username,
 						nsfw: !!req.body.nsfw,
 						artist: req.body.artist || undefined,
-						tags: req.body.tags || [],
+						tags: req.body.tags || '',
 						comments: []
 					});
 
 					return res.status(201).send({
 						code: 201,
 						message: 'Image uploaded',
-						image_url: `https://neko.brussell.me/images/${filename}.jpg`,
+						image_url: `https://neko.brussell.me/image/${filename}.jpg`,
 						post_url: `https://neko.brussell.me/post/${filename}`
 					});
 				});

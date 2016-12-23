@@ -27,7 +27,7 @@ const imageSchema = new Schema({
 	id: String,
 	uploader: { type: String, required: true },
 	nsfw: { type: Boolean, default: false },
-	tags: [String],
+	tags: String,
 	createdAt: { type: Date, default: Date.now },
 	artist: String,
 	likes: { type: Number, default: 0 },
