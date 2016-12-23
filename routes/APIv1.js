@@ -3,7 +3,12 @@ const bcrypt = require('bcrypt'),
 	nodemailer = require('nodemailer'),
 	uuid = require('uuid'),
 	fs = require('fs'),
-	emailHTML = fs.readFileSync(__dirname + '/assets/verify.html').toString();
+	emailHTML = fs.readFileSync(__dirname + '/assets/verify.html').toString(),
+	fileType = require('file-type'),
+	multer = require('multer'),
+	upload = multer({ storage: multer.memoryStorage() }),
+	jimp = require('jimp'),
+	shortid = require('shortid');
 
 const HASH_ROUNDS = 10;
 
@@ -135,7 +140,7 @@ class APIv1 {
 			})
 		});
 
-		this.router.get('register/resend', async (req, res) => {
+		this.router.post('register/resend', async (req, res) => {
 			if (!req.body || !req.body.email)
 				return res.status(400).send({
 					code: 400,
@@ -171,14 +176,14 @@ class APIv1 {
 			});
 		});
 
-		this.router.get('auth', async (req, res) => {
+		this.router.post('auth', async (req, res) => {
 			if (!req.body || !req.body.username || !req.body.password)
 				return res.status(401).send({
 					code: 401,
 					message: "Username, and password are required"
 				});
 
-			let user = this.database.User.findOne({ username: req.body.username });
+			let user = await this.database.User.findOne({ username: req.body.username });
 
 			if (user && !user.verified)
 				return res.status(400).send({
@@ -202,21 +207,7 @@ class APIv1 {
 			});
 		});
 
-		this.router.get('auth/regen', async (req, res) => {
-			if (!req.body || !req.body.token)
-				return res.status(401).send({
-					code: 401,
-					message: "Authentication required"
-				});
-
-			let user = this.database.User.findOne({ token: req.body.token });
-
-			if (!user)
-				return res.status(400).send({
-					code: 400,
-					message: "Invalid token"
-				});
-
+		this.router.post('auth/regen', this.authorize, async (req, res) => {
 			// Generate new token
 			let UUID = uuid();
 			let claims = { iss: UUID },
@@ -224,15 +215,114 @@ class APIv1 {
 			jwt.setExpiration(); // Never expires
 			let token = jwt.compact();
 
-			user.uuid = UUID;
-			user.token = token;
-			await user.save();
+			req.user.uuid = UUID;
+			req.user.token = token;
+			await req.user.save();
 
 			return res.status(200).send({
 				code: 200,
 				message: "A new token has been generated. You will need to re-authenticate to make further requests."
 			});
 		});
+
+		this.router.post('images', this.authorize, upload.single('image'), async (req, res) => {
+			if (!req.file || !req.body)
+				return res.status(400).send({
+					code: 400,
+					message: "No image and/or body attached"
+				});
+
+			let fileExtension = fileType(req.file.buffer);
+
+			if (!['png', 'jpg', 'jpeg'].includes(fileExtension.ext))
+				return res.status(400).send({
+					code: 400,
+					message: "Image must have type PNG, JPG, or JPEG"
+				});
+
+			if (req.file.size > 2097152)
+				return res.status(400).send({
+					code: 400,
+					message: "Image size must be below 2MB"
+				});
+
+			if (req.body.tags && req.body.tags.find(t => t.length > 20))
+				return res.status(400).send({
+					code: 400,
+					message: "Tags have a maximum length of 20 characters"
+				});
+
+			if (req.body.artist && req.body.artist.length > 30)
+				return res.status(400).send({
+					code: 400,
+					message: "The artist field has a maximum length of 30 characters"
+				});
+
+			let filename = shortid.generate();
+
+			// Compress if above 512000
+			jimp.read(req.file.buffer).then(image => {
+				// If image is large scale down by 25%
+				if (image.bitmap.width > 2000 || image.bitmap.height > 2000)
+					image.resize(image.bitmap.width * .75, jimp.AUTO, jimp.RESIZE_BICUBIC);
+
+				// Save as JPG with quality of 85. This saves a ton of space and is usually unnoticable
+				image.quality(85).write(`${__dirname}/../images/${filename}.jpg`, async () => {
+					await this.database.Image.create({
+						id: filename,
+						uploader: req.user.username,
+						nsfw: !!req.body.nsfw,
+						artist: req.body.artist || undefined,
+						tags: req.body.tags || [],
+						comments: []
+					});
+
+					return res.status(201).send({
+						code: 201,
+						message: 'Image uploaded',
+						image_url: `https://neko.brussell.me/images/${filename}.jpg`,
+						post_url: `https://neko.brussell.me/post/${filename}`
+					});
+				});
+			}).catch(error => {
+				console.error(error);
+				return res.status(500).send({
+					code: 500,
+					message: 'Error saving image',
+					error: error.message
+				});
+			});
+		});
+	}
+
+	async authorize(req, res, next) {
+		if (!req.headers.authorization)
+			return res.status(400).send({
+				code: 400,
+				message: "Authentication required"
+			});
+
+		let nJwtVerified = false;
+
+		try {
+			nJwtVerified = nJwt.verify(req.headers.authorization, req.app.locals.jwt_signingkey);
+		} catch(e) {
+			return res.status(401).send({
+				code: 401,
+				message: "Invalid token",
+				error: e
+			});
+		}
+
+		req.user = await this.database.User.findOne({ token: req.headers.authorization });
+
+		if (!req.headers.authorization || !nJwtVerified || !req.user)
+			return res.status(401).send({
+				code: 401,
+				message: "Invalid token"
+			});
+
+		return next();
 	}
 }
 

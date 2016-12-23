@@ -1,6 +1,6 @@
 {
 	"name": "catgirls-api",
-	"version": "0.3.0",
+	"version": "0.4.0",
 	"description": "An API for neko lovers.",
 	"private": true,
 	"main": "server.js",
@@ -17,7 +17,10 @@
 		"multer": "^1.2.1",
 		"uuid": "^3.0.1",
 		"bcrypt": "^1.0.1",
-		"njwt": "^0.3.2"
+		"njwt": "^0.3.2",
+		"file-type": "^4.0.0",
+		"shortid": "^2.2.6",
+		"jimp": "^0.2.27"
 	},
 	"author": "Brandon Russell",
 	"license": "MIT"
