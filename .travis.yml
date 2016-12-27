@@ -1,0 +1,7 @@
+language: node_js
+node_js:
+  - "7"
+before_install:
+  - npm install -g node-gyp eslint
+dist: trusty
+sudo: false

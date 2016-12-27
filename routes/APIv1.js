@@ -341,10 +341,7 @@ class APIv1 {
 		req.user = await this.database.User.findOne({ token: req.headers.authorization });
 
 		if (!req.headers.authorization || !nJwtVerified || !req.user)
-			return res.status(401).send({
-				code: 401,
-				message: "Invalid token"
-			});
+			return res.status(401).send({ code: 401, message: "Invalid token" });
 
 		return next();
 	}
