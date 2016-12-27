@@ -26,19 +26,13 @@ class APIv1 {
 		});
 
 		this.router.get('/', (req, res) => {
-			return res.status(200).send({
-				code: 200,
-				message: 'Future home of the Catgirls API.'
-			});
+			return res.status(200).send({ code: 200, message: 'Future home of the Catgirls API.' });
 		});
 
 		this.router.post('/register', async (req, res) => {
 			// Reject bad body
 			if (!req.body || !req.body.username || !req.body.email || !req.body.password)
-				return res.status(400).send({
-					code: 400,
-					message: "Email, username, and password are required"
-				});
+				return res.status(400).send({ code: 400, message: "Email, username, and password are required" });
 
 			if (req.body.email.length > 70 || req.body.password.length > 70 || req.body.username.length > 35)
 				return res.status(400).send({
@@ -142,19 +136,13 @@ class APIv1 {
 
 		this.router.post('/register/resend', async (req, res) => {
 			if (!req.body || !req.body.email)
-				return res.status(400).send({
-					code: 400,
-					message: "Email required"
-				});
+				return res.status(400).send({ code: 400, message: "Email required" });
 
 			let unverifiedUser = await this.database.UnverifiedUser.findOne({ key: req.body.email });
 
 			// No matching account found
 			if (!unverifiedUser)
-				return res.status(409).send({
-					code: 409,
-					message: 'This account has already been verified'
-				});
+				return res.status(409).send({ code: 409, message: 'This account has already been verified' });
 
 			// Send verification email
 			this.transporter.sendMail({
@@ -178,10 +166,7 @@ class APIv1 {
 
 		this.router.post('/auth', async (req, res) => {
 			if (!req.body || !req.body.username || !req.body.password)
-				return res.status(401).send({
-					code: 401,
-					message: "Username, and password are required"
-				});
+				return res.status(401).send({ code: 401, message: "Username, and password are required" });
 
 			let user = await this.database.User.findOne({ username: req.body.username });
 
@@ -195,10 +180,7 @@ class APIv1 {
 			let correctCredentials = user ? await bcrypt.compare(req.body.password, user.password) : false;
 
 			if (!correctCredentials)
-				return res.status(400).send({
-					code: 400,
-					message: "Incorrect username or password"
-				});
+				return res.status(400).send({ code: 400, message: "Incorrect username or password" });
 
 			return res.status(200).send({
 				code: 200,
@@ -227,30 +209,23 @@ class APIv1 {
 
 		this.router.post('/images', (req, res, next) => this.authorize(req, res, next), upload.single('image'), async (req, res) => {
 			if (!req.file || !req.body)
-				return res.status(400).send({
-					code: 400,
-					message: "No image and/or body attached"
-				});
+				return res.status(400).send({ code: 400, message: "No image and/or body attached" });
 
 			let fileExtension = fileType(req.file.buffer);
 
 			if (!['png', 'jpg', 'jpeg'].includes(fileExtension.ext))
-				return res.status(400).send({
-					code: 400,
-					message: "Image must have type PNG, JPG, or JPEG"
-				});
+				return res.status(400).send({ code: 400, message: "Image must have type PNG, JPG, or JPEG" });
 
 			if (req.file.size > 2097152)
-				return res.status(400).send({
-					code: 400,
-					message: "Image size must be below 2MB"
-				});
+				return res.status(400).send({ code: 400, message: "Image size must be below 2MB" });
 
-			if (req.body.tags && req.body.tags.split(/ *, */).find(t => t.length > 20))
-				return res.status(400).send({
-					code: 400,
-					message: "Tags have a maximum length of 20 characters"
-				});
+			if (req.body.tags) {
+				// Remove spaces
+				req.body.tags = req.body.tags.replace(/ *, */g, ',');
+
+				if (req.body.tags.split(',').find(t => t.length > 20))
+					return res.status(400).send({ code: 400, message: "Tags have a maximum length of 20 characters" });
+			}
 
 			if (req.body.artist && req.body.artist.length > 30)
 				return res.status(400).send({
@@ -277,7 +252,10 @@ class APIv1 {
 						comments: []
 					});
 
-					return res.status(201).send({
+					req.user.uploads = req.user.uploads + 1;
+					await req.user.save();
+
+					return res.status(201).location(`/image/${filename}.jpg`).send({
 						code: 201,
 						message: 'Image uploaded',
 						image_url: `https://neko.brussell.me/image/${filename}.jpg`,
@@ -291,6 +269,52 @@ class APIv1 {
 					message: 'Error saving image',
 					error: error.message
 				});
+			});
+		});
+
+		this.router.post('/images/search', (req, res, next) => this.authorize(req, res, next), async (req, res) => {
+			if (!req.body)
+				return res.status(400).send({ code: 400, message: "No body" });
+
+			// If searching by ID skip search
+			if (req.body.id) {
+				return res.status(200).send({
+					code: 200,
+					message: 'Search successful',
+					images: await this.database.Image.find({ id: req.body.id }).select('-_id -__v').lean().exec()
+				});
+			}
+
+			let options = {},
+				projection = { '_id': 0, '__v': 0 };
+
+			// Add query options to the mongoose find query.
+			if (req.body.nsfw !== undefined)
+				options.nsfw = req.body.nsfw;
+			if (req.body.uploader !== undefined)
+				options.uploader = req.body.uploader;
+			if (req.body.artist !== undefined)
+				options.artist = req.body.artist;
+			if (req.body.tags !== undefined) {
+				options.$text = { $search: req.body.tags };
+				projection.score = { $meta: 'textScore' };
+			}
+
+			let query = this.database.Image.find(options);
+			if (req.body.tags !== undefined) // Tag search
+				query.sort({ score: { $meta: 'textScore' } });
+			if (req.body.posted_before !== undefined)
+				query.lt('createdAt', req.body.posted_before);
+			if (req.body.posted_after !== undefined)
+				query.gt('createdAt', req.body.posted_after);
+
+			// Max limit of 50
+			let limit = typeof req.body.limit === 'number' && req.body.limit < 50 ? req.body.limit : 20;
+
+			return res.status(200).send({
+				code: 200,
+				message: 'Search successful',
+				images: await query.select(projection).limit(limit).exec()
 			});
 		});
 	}
