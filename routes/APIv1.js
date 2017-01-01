@@ -207,6 +207,31 @@ class APIv1 {
 			});
 		});
 
+		// Require authorization for all methods
+		this.router.use('/images/:id', (req, res, next) => this.authorize(req, res, next));
+
+		this.router.route('/images/:id').get(async (req, res) => {
+			let image = await this.database.Image.findOne({ id: req.params.id }).select('-_id -__v').lean().exec();
+			if (!image)
+				return res.status(404).send({ code: 404, message: 'Image not found' });
+
+			return res.status(200).send({ code: 200, message: 'Image found', image });
+		}).put(async (req, res) => {
+			return res.sendStatus(501);
+		}).delete(async (req, res) => {
+			let image = await this.database.Image.findOne({ id: req.params.id });
+			if (!image)
+				return res.status(404).send({ code: 404, message: 'Image not found' });
+
+			if (req.user.username !== image.uploader)
+				return res.status(403).send({ code: 403, message: 'You are not the uploader of this image' });
+
+			// Delete image from MongoDB
+			await image.remove();
+			// TODO: Remove from likes and favorites of users
+			return res.status(200).send({ code: 200, message: 'Image deleted' });
+		});
+
 		this.router.post('/images', (req, res, next) => this.authorize(req, res, next), upload.single('image'), async (req, res) => {
 			if (!req.file || !req.body)
 				return res.status(400).send({ code: 400, message: "No image and/or body attached" });
