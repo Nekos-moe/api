@@ -11,6 +11,8 @@ class ImagesPOST {
 		this.database = controller.database;
 		this.authorize = controller.authorize;
 
+		controller.rateLimitManager.limitRoute(this.path, { max: 2 }); // 2/10 limit because compression is expensive
+
 		this.router.post(this.path, this.authorize.bind(this), upload.single('image'), this.run.bind(this));
 	}
 

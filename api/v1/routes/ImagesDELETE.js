@@ -5,6 +5,8 @@ class ImagesDELETE {
 		this.database = controller.database;
 		this.authorize = controller.authorize;
 
+		controller.rateLimitManager.limitRoute(this.path, { max: 10 }); // 10/10
+
 		this.router.delete(this.path, this.authorize.bind(this), this.run.bind(this));
 	}
 

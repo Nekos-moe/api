@@ -5,12 +5,16 @@ class RegisterVerifyPOST {
 		this.database = controller.database;
 		this.mailTransport = controller.mailTransport;
 
+		this.rateLimiter = controller.rateLimitManager.limitRoute(this.path, { windowMS: 10000, max: 1 }); // 1/10
+
 		this.router.post(this.path, this.run.bind(this));
 	}
 
 	async run(req, res) {
-		if (!req.body || !req.body.email)
+		if (!req.body || !req.body.email) {
+			this.rateLimiter.unlimit(req, res);
 			return res.status(400).send({ message: "Email required" });
+		}
 
 		let unverifiedUser = await this.database.UnverifiedUser.findOne({ key: req.body.email });
 

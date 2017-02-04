@@ -10,31 +10,41 @@ class RegisterPOST {
 		this.database = controller.database;
 		this.mailTransport = controller.mailTransport;
 
+		this.rateLimiter = controller.rateLimitManager.limitRoute(this.path, { windowMS: 60000, max: 1 }); // 1 per minute
+
 		this.router.post(this.path, this.run.bind(this));
 	}
 
 	async run(req, res) {
 		// Reject bad body
-		if (!req.body || !req.body.username || !req.body.email || !req.body.password)
+		if (!req.body || !req.body.username || !req.body.email || !req.body.password) {
+			this.rateLimiter.unlimit(req, res);
 			return res.status(400).send({ message: "Email, username, and password are required" });
+		}
 
-		if (req.body.email.length > 70 || req.body.password.length > 70 || req.body.username.length > 35)
+		if (req.body.email.length > 70 || req.body.password.length > 70 || req.body.username.length > 35) {
+			this.rateLimiter.unlimit(req, res);
 			return res.status(400).send({
 				messsage: 'Please limit your email address and password to 70 characters, and your username to 35 characters.'
 			});
+		}
 
 		// Password requirements
-		if (req.body.password.length < 8 || !/[a-z]/.test(req.body.password) || !/[A-Z]/.test(req.body.password) || !/[0-9]/.test(req.body.password))
+		if (req.body.password.length < 8 || !/[a-z]/.test(req.body.password) || !/[A-Z]/.test(req.body.password) || !/[0-9]/.test(req.body.password)) {
+			this.rateLimiter.unlimit(req, res);
 			return res.status(400).send({
 				messsage: 'Your password must be at least 8 characters, have uppercase and lowercase alphabetical letters, and contain numbers.'
 			});
+		}
 
 		let existingUser = await this.database.User.findOne({ $or: [{ username: req.body.username }, { email: req.body.email }] });
-		if (existingUser)
+		if (existingUser) {
+			this.rateLimiter.unlimit(req, res);
 			return res.status(409).send({ messsage: existingUser.username === req.body.username
 				? 'Please choose another username. "' + req.body.username + '" is already taken.'
 				: 'There is already an account created using that email.'
 			});
+		}
 
 		let hashedPassword = await bcrypt.hash(req.body.password, HASH_ROUNDS),
 			UUID = uuid(); // Create user id

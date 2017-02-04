@@ -8,6 +8,8 @@ class AuthRegenPOST {
 		this.database = controller.database;
 		this.authorize = controller.authorize;
 
+		controller.rateLimitManager.limitRoute(this.path, { windowMS: 10000, max: 1 }); // 1 per 10 seconds
+
 		this.router.post(this.path, this.authorize.bind(this), this.run.bind(this));
 	}
 

@@ -1,9 +1,11 @@
-class ImagesPUT {
+class ImagesPATCH {
 	constructor(controller) {
 		this.path = '/images/:id';
 		this.router = controller.router;
 		this.database = controller.database;
 		this.authorize = controller.authorize;
+
+		controller.rateLimitManager.limitRoute(this.path, { max: 10 }); // 10/10
 
 		this.router.patch(this.path, this.authorize.bind(this), this.run.bind(this));
 	}
@@ -36,4 +38,4 @@ class ImagesPUT {
 	}
 }
 
-module.exports = ImagesPUT;
+module.exports = ImagesPATCH;

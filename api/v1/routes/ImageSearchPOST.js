@@ -4,6 +4,8 @@ class ImageSearchPOST {
 		this.database = controller.database;
 		this.authorize = controller.authorize;
 
+		controller.rateLimitManager.limitRoute(this.path, { max: 10 }); // 10/10
+
 		this.router.post('/images/search', this.authorize.bind(this), this.run.bind(this));
 	}
 

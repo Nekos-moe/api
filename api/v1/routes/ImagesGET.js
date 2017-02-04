@@ -5,7 +5,7 @@ class ImagesGET {
 		this.database = controller.database;
 		this.authorize = controller.authorize;
 
-		controller.rateLimitManager.limitRoute(this.path, { max: 10 });
+		controller.rateLimitManager.limitRoute(this.path, { max: 10 }); // 10/10 limit
 
 		this.router.get(this.path, this.authorize.bind(this), this.run.bind(this));
 	}
