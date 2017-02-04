@@ -12,8 +12,8 @@ const userSchema = new Schema({
 	verified: { type: Boolean, default: false },
 	roles: [{ type: String, enum: ['admin', 'moderator'] }],
 	uploads: { type: Number, default: 0 },
-	likes: [{ type: String, default: [] }],
-	favorites: [{ type: String, default: [] }],
+	likes: [String],
+	favorites: [String],
 	likesReceived: { type: Number, default: 0 },
 	favoritesReceived: { type: Number, default: 0 },
 	createdAt: { type: Date, default: Date.now }
