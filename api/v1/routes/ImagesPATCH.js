@@ -30,8 +30,8 @@ class ImagesPATCH {
 			return res.status(403).send({ message: 'You are not the uploader of this image' });
 
 		image.tags = req.body.tags || image.tags;
-		image.artist = req.body.artist ? req.body.artist : image.artist;
-		image.nsfw = !!(req.body.nsfw || image.nsfw);
+		image.artist = req.body.artist !== undefined ? req.body.artist || undefined : image.artist;
+		image.nsfw = !!(req.body.nsfw === undefined ? image.nsfw : req.body.nsfw);
 		await image.save();
 
 		return res.sendStatus(204);

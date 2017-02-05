@@ -29,7 +29,7 @@ class RegisterVerifyPOST {
 			return res.status(500).send({ message: 'Error updating database' });
 		}
 
-		return res.sendSatus(204);
+		return res.sendStatus(204);
 	}
 }
 

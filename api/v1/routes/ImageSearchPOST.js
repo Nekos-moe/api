@@ -1,12 +1,13 @@
 class ImageSearchPOST {
 	constructor(controller) {
+		this.path = '/images/search';
 		this.router = controller.router;
 		this.database = controller.database;
 		this.authorize = controller.authorize;
 
 		controller.rateLimitManager.limitRoute(this.path, { max: 10 }); // 10/10
 
-		this.router.post('/images/search', this.authorize.bind(this), this.run.bind(this));
+		this.router.post(this.path, this.authorize.bind(this), this.run.bind(this));
 	}
 
 	async run(req, res) {
@@ -26,9 +27,9 @@ class ImageSearchPOST {
 		// Add query options to the mongoose find query.
 		if (req.body.nsfw !== undefined)
 			options.nsfw = req.body.nsfw;
-		if (req.body.uploader !== undefined)
+		if (req.body.uploader)
 			options.uploader = req.body.uploader;
-		if (req.body.artist !== undefined)
+		if (req.body.artist)
 			options.artist = req.body.artist;
 		if (req.body.tags !== undefined) {
 			options.$text = { $search: req.body.tags };

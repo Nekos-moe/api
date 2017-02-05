@@ -85,7 +85,7 @@ class RateLimit {
 			remaining: Math.max(this.options.max - requests, 0)
 		}
 
-		res.set('X-RateLimit-Limit', req.rateLimit.max);
+		res.set('X-RateLimit-Limit', req.rateLimit.limit);
 		res.set('X-RateLimit-Remaining', req.rateLimit.remaining);
 
 		if (this.options.max && requests > this.options.max)
@@ -100,7 +100,7 @@ class RateLimit {
 		req.rateLimit.requests--;
 		req.rateLimit.remaining++;
 
-		res.set('X-RateLimit-Limit', req.rateLimit.max);
+		res.set('X-RateLimit-Limit', req.rateLimit.limit);
 		res.set('X-RateLimit-Remaining', req.rateLimit.remaining);
 
 		return;

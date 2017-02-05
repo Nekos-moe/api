@@ -12,7 +12,9 @@ class APIv1 {
 		this.path = '/api/v1';
 		this.settings = settings
 
-		fs.readdir('./routes/', (error, files) => {
+		this.rateLimitManager.install(this.router);
+
+		fs.readdir(__dirname + '/routes/', (error, files) => {
 			if (error)
 				throw error;
 
@@ -20,11 +22,9 @@ class APIv1 {
 				if (!file.endsWith('js'))
 					continue;
 
-				let route = new (require('./routes/' + file))(this);
+				let route = new (require(__dirname + '/routes/' + file))(this);
 				this.routes[route.path] = route;
 			}
-
-			this.rateLimitManager.install(this.router);
 		});
 	}
 

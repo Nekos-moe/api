@@ -12,12 +12,14 @@ const express = require('express'),
 
 mailTransport.config({ from: settings.email.from });
 
-raven.disableConsoleAlerts();
-raven.config(settings.raven.url, {
-	release: (require('./package.json')).version,
-	autoBreadcrumbs: { 'http': true },
-	captureUnhandledRejections: true
-}).install();
+if (process.env.NODE_ENV === 'production') {
+	raven.disableConsoleAlerts();
+	raven.config(settings.raven.url, {
+		release: (require('./package.json')).version,
+		autoBreadcrumbs: { 'http': true },
+		captureUnhandledRejections: true
+	}).install();
+}
 
 app.set('trust proxy', 'loopback');
 app.set('env', 'production');

@@ -3,10 +3,10 @@ const nodemailer = require('nodemailer'),
 	emails = {
 		verify: fs.readFileSync(__dirname + '/../assets/verify.html').toString()
 	},
-	transport = nodemailer.createTransport({
+	transport = process.env.NODE_ENV === 'production' ? nodemailer.createTransport({
 		name: 'no-repy',
 		tls: { rejectUnauthorized: false }
-	});
+	}) : null;
 
 var from;
 
@@ -39,4 +39,8 @@ function sendHTMLMail(template, options, values) {
 	});
 }
 
-module.exports = { config, sendMail, sendHTMLMail };
+module.exports = process.env.NODE_ENV === 'production' ? { config, sendMail, sendHTMLMail } : {
+	config,
+	sendMail() { return Promise.resolve(); },
+	sendHTMLMail() { return Promise.resolve(); }
+};

@@ -1,12 +1,13 @@
 {
 	"name": "catgirls-api",
-	"version": "0.7.0",
+	"version": "0.8.0",
 	"description": "An API for neko lovers.",
 	"private": true,
 	"main": "server.js",
 	"scripts": {
 		"test": "eslint -c .eslintrc.json .",
-		"start": "node --harmony server.js"
+		"start": "cross-env NODE_ENV=production node --harmony server.js",
+		"dev": "cross-env NODE_ENV=development node --harmony server.js"
 	},
 	"dependencies": {
 		"body-parser": "^1.16.0",
@@ -22,7 +23,8 @@
 		"file-type": "^4.1.0",
 		"shortid": "^2.2.6",
 		"jimp": "^0.2.27",
-		"raven": "^1.1.1"
+		"raven": "^1.1.1",
+		"cross-env": "*"
 	},
 	"author": "brussell98",
 	"license": "MIT"

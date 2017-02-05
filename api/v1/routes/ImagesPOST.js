@@ -2,11 +2,12 @@ const fileType = require('file-type'),
 	multer = require('multer'),
 	upload = multer({ storage: multer.memoryStorage() }),
 	jimp = require('jimp'),
-	shortid = require('shortid');
+	shortid = require('shortid'),
+	fs = require('fs');
 
 class ImagesPOST {
 	constructor(controller) {
-		this.path = '/images/:id';
+		this.path = '/images';
 		this.router = controller.router;
 		this.database = controller.database;
 		this.authorize = controller.authorize;
@@ -41,30 +42,39 @@ class ImagesPOST {
 
 		let filename = shortid.generate();
 
-		return jimp.read(req.file.buffer).then(image => {
-			// If image is large scale down by 25%
-			if (image.bitmap.width > 2000 || image.bitmap.height > 2000)
-				image.resize(image.bitmap.width * .75, jimp.AUTO, jimp.RESIZE_BICUBIC);
-
-			// Save as JPG with quality of 85. This saves a ton of space and is usually unnoticable
-			image.quality(85).write(`${__dirname}/../../../image/${filename}.jpg`, async () => {
-				await this.database.Image.create({
-					id: filename,
-					uploader: req.user.username,
-					nsfw: !!req.body.nsfw,
-					artist: req.body.artist || undefined,
-					tags: req.body.tags || '',
-					comments: []
-				});
-
-				req.user.uploads = req.user.uploads + 1;
-				await req.user.save();
-
-				return res.status(201).location(`/image/${filename}.jpg`).send({
-					image_url: `https://nekos.brussell.me/image/${filename}.jpg`,
-					post_url: `https://nekos.brussell.me/post/${filename}`
-				});
+		let fn = async () => {
+			await this.database.Image.create({
+				id: filename,
+				uploader: req.user.username,
+				nsfw: !!req.body.nsfw,
+				artist: req.body.artist || undefined,
+				tags: req.body.tags || '',
+				comments: []
 			});
+
+			req.user.uploads = req.user.uploads + 1;
+			await req.user.save();
+
+			return res.status(201).location(`/image/${filename}.jpg`).send({
+				image_url: `https://nekos.brussell.me/image/${filename}.jpg`,
+				post_url: `https://nekos.brussell.me/post/${filename}`
+			});
+		}
+
+		if (req.file.size <= 409600 && fileExtension.ext === 'jpg')
+			return fs.writeFile(`${__dirname}/../../../image/${filename}.jpg`, req.file.buffer, fn);
+
+		return jimp.read(req.file.buffer).then(image => {
+			if (req.file.size > 409600) {
+				// If image is large scale down by 25%
+				if (image.bitmap.width > 2000 || image.bitmap.height > 2000)
+					image.resize(image.bitmap.width * .75, jimp.AUTO, jimp.RESIZE_BICUBIC);
+
+				// Save as JPG with quality of 90. This saves a ton of space and is usually unnoticable
+				image.quality(90);
+			}
+
+			return image.write(`${__dirname}/../../../image/${filename}.jpg`, fn);
 		}).catch(error => {
 			console.error(error);
 			return res.status(500).send({

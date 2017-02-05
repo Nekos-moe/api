@@ -1,3 +1,5 @@
+const fs = require('fs');
+
 class ImagesDELETE {
 	constructor(controller) {
 		this.path = '/images/:id';
@@ -20,7 +22,12 @@ class ImagesDELETE {
 
 		// Delete image from MongoDB
 		await this.database.Image.remove({ id: image.id });
+		req.user.uploads--;
+		await req.user.save();
 		// TODO: Remove from likes and favorites of users
+
+		fs.unlinkSync(`${__dirname}/../../../image/${image.id}.jpg`);
+
 		return res.sendStatus(204);
 	}
 }
