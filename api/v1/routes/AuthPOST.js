@@ -1,4 +1,5 @@
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcrypt'),
+	RateLimiter = require('../../../structures/RateLimiter');
 
 class AuthPOST {
 	constructor(controller) {
@@ -6,9 +7,13 @@ class AuthPOST {
 		this.router = controller.router;
 		this.database = controller.database;
 
-		this.rateLimiter = controller.rateLimitManager.limitRoute(this.path, { windowMS: 5000, max: 1 }); // Once every 5 seconds
+		this.rateLimiter = new RateLimiter({ windowMS: 5000, max: 1 }); // Once every 5 seconds
 
-		this.router.post(this.path, this.run.bind(this));
+		this.router.post(
+			this.path,
+			this.rateLimiter.limit.bind(this.rateLimiter),
+			this.run.bind(this)
+		);
 	}
 
 	async run(req, res) {

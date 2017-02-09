@@ -3,7 +3,8 @@ const fileType = require('file-type'),
 	upload = multer({ storage: multer.memoryStorage() }),
 	jimp = require('jimp'),
 	shortid = require('shortid'),
-	fs = require('fs');
+	fs = require('fs'),
+	RateLimiter = require('../../../structures/RateLimiter');
 
 class ImagesPOST {
 	constructor(controller) {
@@ -12,9 +13,15 @@ class ImagesPOST {
 		this.database = controller.database;
 		this.authorize = controller.authorize;
 
-		controller.rateLimitManager.limitRoute(this.path, { max: 2 }); // 2/10 limit because compression is expensive
+		this.rateLimiter = new RateLimiter({ max: 2 }); // 2/10 limit because compression is expensive
 
-		this.router.post(this.path, this.authorize.bind(this), upload.single('image'), this.run.bind(this));
+		this.router.post(
+			this.path,
+			this.rateLimiter.limit.bind(this.rateLimiter),
+			this.authorize.bind(this),
+			upload.single('image'),
+			this.run.bind(this)
+		);
 	}
 
 	async run(req, res) {

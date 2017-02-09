@@ -1,3 +1,5 @@
+const RateLimiter = require('../../../structures/RateLimiter');
+
 class ImageSearchPOST {
 	constructor(controller) {
 		this.path = '/images/search';
@@ -5,9 +7,14 @@ class ImageSearchPOST {
 		this.database = controller.database;
 		this.authorize = controller.authorize;
 
-		controller.rateLimitManager.limitRoute(this.path, { max: 10 }); // 10/10
+		this.rateLimiter = new RateLimiter({ max: 10 }); // 10/10
 
-		this.router.post(this.path, this.authorize.bind(this), this.run.bind(this));
+		this.router.post(
+			this.path,
+			this.rateLimiter.limit.bind(this.rateLimiter),
+			this.authorize.bind(this),
+			this.run.bind(this)
+		);
 	}
 
 	async run(req, res) {

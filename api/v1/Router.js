@@ -1,6 +1,5 @@
 const nJwt = require('njwt'),
-	fs = require('fs'),
-	RateLimitManager = require('../../structures/RateLimitManager');
+	fs = require('fs');
 
 class APIv1 {
 	constructor(settings, database, mailTransport) {
@@ -8,11 +7,8 @@ class APIv1 {
 		this.mailTransport = mailTransport;
 		this.router = require('express').Router();
 		this.routes = {};
-		this.rateLimitManager = new RateLimitManager();
 		this.path = '/api/v1';
 		this.settings = settings
-
-		this.rateLimitManager.install(this.router);
 
 		fs.readdir(__dirname + '/routes/', (error, files) => {
 			if (error)

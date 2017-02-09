@@ -1,7 +1,8 @@
 const uuid = require('uuid'),
 	nJwt = require('njwt'),
 	bcrypt = require('bcrypt'),
-	HASH_ROUNDS = 10;
+	HASH_ROUNDS = 10,
+	RateLimiter = require('../../../structures/RateLimiter');
 
 class AccountPasswordPATCH {
 	constructor(controller) {
@@ -12,9 +13,14 @@ class AccountPasswordPATCH {
 		this.authorize = controller.authorize;
 
 		// One per 10 seconds because of the computation required
-		this.rateLimiter = controller.rateLimitManager.limitRoute(this.path, { max: 1 });
+		this.rateLimiter = new RateLimiter({ max: 1 });
 
-		this.router.patch(this.path, this.authorize.bind(this), this.run.bind(this));
+		this.router.patch(
+			this.path,
+			this.rateLimiter.limit.bind(this.rateLimiter),
+			this.authorize.bind(this),
+			this.run.bind(this)
+		);
 	}
 
 	async run(req, res) {

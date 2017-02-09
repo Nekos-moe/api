@@ -1,3 +1,5 @@
+const RateLimiter = require('../../../structures/RateLimiter');
+
 class RegisterVerifyPOST {
 	constructor(controller) {
 		this.path = '/register/resend';
@@ -5,9 +7,13 @@ class RegisterVerifyPOST {
 		this.database = controller.database;
 		this.mailTransport = controller.mailTransport;
 
-		this.rateLimiter = controller.rateLimitManager.limitRoute(this.path, { windowMS: 10000, max: 1 }); // 1/10
+		this.rateLimiter = new RateLimiter({ windowMS: 10000, max: 1 }); // 1/10
 
-		this.router.post(this.path, this.run.bind(this));
+		this.router.post(
+			this.path,
+			this.rateLimiter.limit.bind(this.rateLimiter),
+			this.run.bind(this)
+		);
 	}
 
 	async run(req, res) {

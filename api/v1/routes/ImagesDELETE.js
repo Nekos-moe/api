@@ -1,4 +1,5 @@
-const fs = require('fs');
+const fs = require('fs'),
+	RateLimiter = require('../../../structures/RateLimiter');
 
 class ImagesDELETE {
 	constructor(controller) {
@@ -7,9 +8,14 @@ class ImagesDELETE {
 		this.database = controller.database;
 		this.authorize = controller.authorize;
 
-		controller.rateLimitManager.limitRoute(this.path, { max: 10 }); // 10/10
+		this.rateLimiter = new RateLimiter({ max: 10 }); // 10/10
 
-		this.router.delete(this.path, this.authorize.bind(this), this.run.bind(this));
+		this.router.delete(
+			this.path,
+			this.rateLimiter.limit.bind(this.rateLimiter),
+			this.authorize.bind(this),
+			this.run.bind(this)
+		);
 	}
 
 	async run(req, res) {

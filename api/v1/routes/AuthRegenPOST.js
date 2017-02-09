@@ -1,5 +1,6 @@
 const uuid = require('uuid'),
-	nJwt = require('njwt');
+	nJwt = require('njwt'),
+	RateLimiter = require('../../../structures/RateLimiter');
 
 class AuthRegenPOST {
 	constructor(controller) {
@@ -8,9 +9,14 @@ class AuthRegenPOST {
 		this.database = controller.database;
 		this.authorize = controller.authorize;
 
-		controller.rateLimitManager.limitRoute(this.path, { windowMS: 10000, max: 1 }); // 1 per 10 seconds
+		this.rateLimiter = new RateLimiter({ windowMS: 10000, max: 1 }); // 1 per 10 seconds
 
-		this.router.post(this.path, this.authorize.bind(this), this.run.bind(this));
+		this.router.post(
+			this.path,
+			this.rateLimiter.limit.bind(this.rateLimiter),
+			this.authorize.bind(this),
+			this.run.bind(this)
+		);
 	}
 
 	async run(req, res) {

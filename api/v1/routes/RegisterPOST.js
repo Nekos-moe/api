@@ -1,7 +1,8 @@
 const bcrypt = require('bcrypt'),
 	nJwt = require('njwt'),
 	uuid = require('uuid'),
-	HASH_ROUNDS = 10;
+	HASH_ROUNDS = 10,
+	RateLimiter = require('../../../structures/RateLimiter');
 
 class RegisterPOST {
 	constructor(controller) {
@@ -10,9 +11,13 @@ class RegisterPOST {
 		this.database = controller.database;
 		this.mailTransport = controller.mailTransport;
 
-		this.rateLimiter = controller.rateLimitManager.limitRoute(this.path, { windowMS: 60000, max: 1 }); // 1 per minute
+		this.rateLimiter = new RateLimiter({ windowMS: 60000, max: 1 }); // 1 per minute
 
-		this.router.post(this.path, this.run.bind(this));
+		this.router.post(
+			this.path,
+			this.rateLimiter.limit.bind(this.rateLimiter),
+			this.run.bind(this)
+		);
 	}
 
 	async run(req, res) {

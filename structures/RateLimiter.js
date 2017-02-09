@@ -1,45 +1,23 @@
-class RateLimitManager { // class b1nzy {
-	constructor(defaults = {}) {
-		this.defaults = {
-			windowMS: defaults.windowMS || 10 * 1000,
-			max: defaults.max || 20,
-			message : defaults.message || 'Too many requests, please try again later にゃー.',
-			statusCode: defaults.statusCode || 429,
-			keyGenerator: defaults.keyGenerator || function(req) {
+class RateLimiter {
+	constructor(options) {
+		this.options = Object.assign({}, {
+			windowMS: 10 * 1000,
+			max: 20,
+			message : 'Too many requests, please try again later にゃー.',
+			statusCode: 429,
+			keyGenerator(req) {
 				return req.ip;
 			},
-			skip: defaults.skip || function() {
+			skip() {
 				return false;
 			},
-			handler: defaults.handler || function(store, req, res) {
+			handler(store, req, res) {
 				let retry = store.reset - Date.now();
 				res.set('Retry-After', retry);
 				return res.status(this.statusCode).send({ message: this.message, retryAfter: retry });
 			}
-		};
+		}, options); // Overwrite defaults with options
 
-		this.routes = {};
-	}
-
-	limitRoute(route, options = {}) {
-		let rl = new RateLimit(Object.assign({}, this.defaults, options));
-		this.routes[route] = rl;
-		return rl;
-	}
-
-	install(app) {
-		app.use((req, res, next) => {
-			if (this.routes[req.path])
-				return this.routes[req.path].rateLimit(req, res, next);
-
-			return next();
-		});
-	}
-}
-
-class RateLimit {
-	constructor(options) {
-		this.options = options;
 		this.store = {
 			requests: {},
 			reset: Date.now() + options.windowMS,
@@ -71,7 +49,7 @@ class RateLimit {
 		setInterval(() => this.store.resetAll(this.options), this.options.windowMS);
 	}
 
-	rateLimit(req, res, next) {
+	limit(req, res, next) {
 		if (this.options.skip(req, res))
 			return next();
 
@@ -107,4 +85,4 @@ class RateLimit {
 	}
 }
 
-module.exports = RateLimitManager;
+module.exports = RateLimiter;
