@@ -12,7 +12,7 @@ class ImageSearchPOST {
 		this.router.post(
 			this.path,
 			this.rateLimiter.limit.bind(this.rateLimiter),
-			this.authorize.bind(this),
+			// this.authorize.bind(this),
 			this.run.bind(this)
 		);
 	}
@@ -29,7 +29,8 @@ class ImageSearchPOST {
 		}
 
 		let options = {},
-			projection = { '_id': 0, '__v': 0 };
+			projection = { '_id': 0, '__v': 0 },
+			sort = {};
 
 		// Add query options to the mongoose find query.
 		if (req.body.nsfw !== undefined)
@@ -41,15 +42,22 @@ class ImageSearchPOST {
 		if (req.body.tags !== undefined) {
 			options.$text = { $search: req.body.tags };
 			projection.score = { $meta: 'textScore' };
+			sort.score = { $meta: 'textScore' };
+		}
+		if (req.body.sort) {
+			if (req.body.sort === 'recent')
+				sort._id = -1;
+			else if (req.body.sort === 'likes')
+				sort.likes = 1;
 		}
 
-		let query = this.database.Image.find(options);
-		if (req.body.tags !== undefined) // Tag search
-			query.sort({ score: { $meta: 'textScore' } });
+		let query = this.database.Image.find(options).sort(sort);
 		if (req.body.posted_before !== undefined)
 			query.lt('createdAt', req.body.posted_before);
 		if (req.body.posted_after !== undefined)
 			query.gt('createdAt', req.body.posted_after);
+		if (typeof req.body.skip === 'number' && req.body.skip >= 0)
+			query.skip(req.body.skip);
 
 		// Max limit of 50
 		let limit = typeof req.body.limit === 'number' && req.body.limit < 50 ? req.body.limit : 20;
