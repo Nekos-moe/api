@@ -1,6 +1,6 @@
 {
 	"name": "catgirls-api",
-	"version": "0.10.0",
+	"version": "0.11.0",
 	"description": "An API for neko lovers.",
 	"private": true,
 	"main": "server.js",

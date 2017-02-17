@@ -21,7 +21,8 @@ class HomeGET {
 				"PATCH /images/:id": "Update an image's metadata",
 				"DELETE /images/:id": "Delete an image",
 				"POST /images": "Upload a catgirl",
-				"POST /images/search": "Search images"
+				"POST /images/search": "Search images",
+				"GET /users/:id": "Get a user or @me"
 			},
 			version: 1,
 			releaseWhen: "SoonTM"

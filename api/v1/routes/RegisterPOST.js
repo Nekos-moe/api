@@ -27,6 +27,14 @@ class RegisterPOST {
 			return res.status(400).send({ message: "Email, username, and password are required" });
 		}
 
+		// Username requirements
+		if (/[@\n]/.test(req.body.username)) {
+			this.rateLimiter.unlimit(req, res);
+			return res.status(400).send({
+				messsage: 'Your username must not contain a new line character or @ symbol.'
+			});
+		}
+
 		if (req.body.email.length > 70 || req.body.password.length > 70 || req.body.username.length > 35) {
 			this.rateLimiter.unlimit(req, res);
 			return res.status(400).send({

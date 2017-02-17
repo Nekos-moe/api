@@ -5,14 +5,13 @@ class ImagesGET {
 		this.path = '/images/:id';
 		this.router = controller.router;
 		this.database = controller.database;
-		this.authorize = controller.authorize;
 
 		this.rateLimiter = new RateLimiter({ max: 10 }); // 10/10 limit
 
 		this.router.get(
 			this.path,
 			this.rateLimiter.limit.bind(this.rateLimiter),
-			this.authorize.bind(this),
+			// this.authorize.bind(this),
 			this.run.bind(this)
 		);
 	}

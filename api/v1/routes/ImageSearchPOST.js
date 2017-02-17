@@ -5,14 +5,12 @@ class ImageSearchPOST {
 		this.path = '/images/search';
 		this.router = controller.router;
 		this.database = controller.database;
-		this.authorize = controller.authorize;
 
 		this.rateLimiter = new RateLimiter({ max: 10 }); // 10/10
 
 		this.router.post(
 			this.path,
 			this.rateLimiter.limit.bind(this.rateLimiter),
-			// this.authorize.bind(this),
 			this.run.bind(this)
 		);
 	}
