@@ -37,10 +37,25 @@ class ImageSearchPOST {
 			options.uploader = req.body.uploader;
 		if (req.body.artist)
 			options.artist = req.body.artist;
-		if (req.body.tags !== undefined) {
-			options.$text = { $search: req.body.tags };
-			projection.score = { $meta: 'textScore' };
-			sort.score = { $meta: 'textScore' };
+		if (req.body.tags !== undefined && req.body.tags !== '') {
+			/* What we are doing here is bypassing a mongodb $text restriction.
+			 * If you only include negate expressions then nothing will match so
+			 * we turn it into a $not regex that matches negated tags and returns
+			 * the rest. This is needed for tag blacklists.
+			*/
+			if (req.body.tags.split(/-"[^"]+"/).join('').trim() === '') {
+				options.tags = {
+					$not: new RegExp(
+						"(,|^)(" +
+						req.body.tags.split(/" -"/).join('|').substring(2).slice(0, -1) +
+						")(,|$)"
+					)
+				};
+			} else {
+				options.$text = { $search: req.body.tags };
+				projection.score = { $meta: 'textScore' };
+				sort.score = { $meta: 'textScore' };
+			}
 		}
 		if (req.body.sort) {
 			if (req.body.sort === 'recent')
