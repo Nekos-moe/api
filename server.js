@@ -37,16 +37,16 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // In dev we need a way to get images
-if (process.env.NODE_ENV === 'development') {
+if (process.env.NODE_ENV === 'development')
 	app.use('/image', express.static('image', { index: false, extensions: ['jpg'] }));
-	app.use((req, res, next) => {
-		res.set('Access-Control-Allow-Origin', '*');
-		res.set('Access-Control-Allow-Credentials', 'true');
-		res.set('Access-Control-Allow-Methods', 'GET,HEAD,OPTIONS,POST,PUT');
-		res.set('Access-Control-Allow-Headers', 'Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers, Authorization');
-		return next();
-	});
-}
+
+app.use((req, res, next) => {
+	res.set('Access-Control-Allow-Origin', '*');
+	res.set('Access-Control-Allow-Credentials', 'true');
+	res.set('Access-Control-Allow-Methods', 'GET,OPTIONS,POST,PUT');
+	res.set('Access-Control-Allow-Headers', 'Access-Control-Allow-Headers, Origin, Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers, Authorization');
+	return next();
+});
 
 // Load in the routes for express
 let apiv1 = new (require('./api/v1/Router.js'))(settings, db, mailTransport);
