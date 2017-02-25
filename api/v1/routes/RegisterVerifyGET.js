@@ -17,7 +17,7 @@ class RegisterVerifyPOST {
 				message: 'Invalid key. Either the account has already been validated or the key was misspelled'
 			});
 
-		let user = await this.database.User.findOne({ email: unverifiedUser.email });
+		let user = await this.database.User.findOne({ email: unverifiedUser.email }).select('+email');
 
 		// Mark user as verified and save user. Then delete the unverified user doc
 		user.verified = true;

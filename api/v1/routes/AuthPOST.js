@@ -22,7 +22,7 @@ class AuthPOST {
 			return res.status(400).send({ message: "Username, and password are required" });
 		}
 
-		let user = await this.database.User.findOne({ username: req.body.username });
+		let user = await this.database.User.findOne({ username: req.body.username }).select('+password +token');
 
 		if (user && !user.verified)
 			return res.status(403).send({ message: "You must verify your email before you can view your token." });

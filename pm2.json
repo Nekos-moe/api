@@ -6,7 +6,6 @@
 			"NODE_ENV": "production"
 		},
 		"kill_timeout": "6000",
-		"restart_delay": "2000",
-		"node_args": "--harmony"
+		"restart_delay": "2000"
 	}]
 }

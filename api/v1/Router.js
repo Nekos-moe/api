@@ -35,7 +35,7 @@ class APIv1 {
 			return res.status(401).send({ message: "Invalid token", error: e });
 		}
 
-		req.user = await this.database.User.findOne({ token: req.headers.authorization });
+		req.user = await this.database.User.findOne({ token: req.headers.authorization }).select('+token +password');
 
 		if (!req.user)
 			return res.status(401).send({ message: "Invalid token" });

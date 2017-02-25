@@ -4,11 +4,11 @@ const Mongoose = require('mongoose'),
 Mongoose.Promise = global.Promise;
 
 const userSchema = new Schema({
-	uuid: String,
-	email: { type: String, maxlength: 70, trim: true },
-	password: { type: String, maxlength: 70 },
-	username: { type: String, maxlength: 35, trim: true },
-	token: String,
+	uuid: { type: String, select: false },
+	email: { type: String, maxlength: 70, trim: true, select: false },
+	password: { type: String, maxlength: 70, select: false },
+	username: { type: String, maxlength: 35, trim: true, unique: true, index: { unique: true } },
+	token: { type: String, select: false },
 	verified: { type: Boolean, default: false },
 	roles: [{ type: String, enum: ['admin', 'moderator'] }],
 	uploads: { type: Number, default: 0 },
@@ -19,12 +19,12 @@ const userSchema = new Schema({
 	createdAt: { type: Date, default: Date.now }
 });
 const unverifiedUserSchema = new Schema({
-	email: String,
+	email: { type: String, unique: true, index: { unique: true } },
 	key: String
 });
 
 const imageSchema = new Schema({
-	id: String,
+	id: { type: String, unique: true, index: { unique: true } },
 	uploader: { type: String, required: true },
 	nsfw: { type: Boolean, default: false },
 	tags: String,
