@@ -1,6 +1,6 @@
 {
 	"name": "catgirls-api",
-	"version": "0.11.2",
+	"version": "0.12.0",
 	"description": "An API for neko lovers.",
 	"private": true,
 	"main": "server.js",
@@ -22,7 +22,7 @@
 		"njwt": "^0.4.0",
 		"file-type": "^4.1.0",
 		"shortid": "^2.2.6",
-		"jimp": "^0.2.27",
+		"sharp": "^0.17.2",
 		"raven": "^1.1.1",
 		"cross-env": "*"
 	},
