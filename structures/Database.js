@@ -25,10 +25,11 @@ const unverifiedUserSchema = new Schema({
 
 const imageSchema = new Schema({
 	id: { type: String, unique: true, index: { unique: true } },
+	originalHash: { type: String, unique: true, index: { unique: true }, select: false },
+	createdAt: { type: Date, default: Date.now },
 	uploader: { type: String, required: true },
 	nsfw: { type: Boolean, default: false },
 	tags: String,
-	createdAt: { type: Date, default: Date.now },
 	artist: String,
 	likes: { type: Number, default: 0 },
 	favorites: { type: Number, default: 0 },
