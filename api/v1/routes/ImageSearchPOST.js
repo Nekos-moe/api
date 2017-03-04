@@ -76,7 +76,7 @@ class ImageSearchPOST {
 		let limit = typeof req.body.limit === 'number' && req.body.limit < 50 ? req.body.limit : 20;
 
 		return res.status(200).send({
-			images: await query.select(projection).limit(limit).exec()
+			images: await query.select(projection).limit(limit).lean().exec()
 		});
 	}
 }

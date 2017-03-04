@@ -23,7 +23,7 @@ class ImagesDELETE {
 		if (!image)
 			return res.status(404).send({ message: 'Image not found' });
 
-		if (req.user.username !== image.uploader)
+		if (req.user.id !== image.uploader.id)
 			return res.status(403).send({ message: 'You are not the uploader of this image' });
 
 		// Delete image from MongoDB

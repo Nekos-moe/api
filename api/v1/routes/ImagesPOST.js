@@ -46,14 +46,18 @@ class ImagesPOST {
 				return res.status(409).send({ message: "Image already uploaded", id: existing.id });
 
 			if (req.body.tags) {
-				req.body.tags = req.body.tags.replace(/ *, */g, ','); // Remove spaces around commas
+				// Remove spaces around commas. Also convert _ and - to space
+				req.body.tags = req.body.tags.replace(/( *,[ ,]*(\r?\n)*|\r\n+|\n+)/g, ',').replace(/[-_]/g, ' ');
 
 				if (req.body.tags.split(',').find(t => t.length > 30))
 					return res.status(400).send({ message: "Tags have a maximum length of 30 characters" });
 			}
 
-			if (req.body.artist && req.body.artist.length > 30)
-				return res.status(400).send({ message: "The artist field has a maximum length of 30 characters" });
+			if (req.body.artist) {
+				if (req.body.artist.length > 30)
+					return res.status(400).send({ message: "The artist field has a maximum length of 30 characters" });
+				req.body.artist = req.body.artist.replace(/_/g, ' ');
+			}
 
 			let filename = shortid.generate();
 

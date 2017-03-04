@@ -25,7 +25,7 @@ class AuthPOST {
 		let user = await this.database.User.findOne({ username: req.body.username }).select('+password +token');
 
 		if (user && !user.verified)
-			return res.status(403).send({ message: "You must verify your email before you can view your token." });
+			return res.status(403).send({ message: "You must verify your email" });
 
 		// Check if the passwords match
 		let correctCredentials = user ? await bcrypt.compare(req.body.password, user.password) : false;
