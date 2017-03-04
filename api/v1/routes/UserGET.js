@@ -1,5 +1,4 @@
-const RateLimiter = require('../../../structures/RateLimiter'),
-	nJwt = require('njwt');
+const RateLimiter = require('../../../structures/RateLimiter');
 
 class UserGET {
 	constructor(controller) {
@@ -21,13 +20,6 @@ class UserGET {
 			if (!req.headers.authorization)
 				return res.status(400).send({ message: "Authentication required" });
 
-			try {
-				if (!nJwt.verify(req.headers.authorization, req.app.locals.jwt_signingkey))
-					return res.status(401).send({ message: "Invalid token" });
-			} catch(e) {
-				return res.status(401).send({ message: "Invalid token", error: e });
-			}
-
 			const user = await this.database.User.findOne({ token: req.headers.authorization }).select('-_id -__v -password -uuid -token').lean();
 
 			if (!user)
@@ -36,10 +28,10 @@ class UserGET {
 			return res.status(200).send({ user });
 		}
 
-		const user = await this.database.User.findOne({ id: req.params.id }).select('-_id -__v -password -uuid -token -email').lean();
+		const user = await this.database.User.findOne({ id: req.params.id }).select('-_id -__v -password -id -token -email').lean();
 
 		if (!user)
-			return res.status(404).send({ message: "No user with that ID" });
+			return res.status(404).send({ message: "No user with that id" });
 
 		return res.status(200).send({ user });
 	}

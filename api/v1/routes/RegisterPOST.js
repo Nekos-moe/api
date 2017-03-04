@@ -1,6 +1,6 @@
 const bcrypt = require('bcrypt'),
-	nJwt = require('njwt'),
-	uuid = require('uuid'),
+	shortid = require('shortid'),
+	crypto = require('crypto'),
 	HASH_ROUNDS = 10,
 	RateLimiter = require('../../../structures/RateLimiter');
 
@@ -60,21 +60,16 @@ class RegisterPOST {
 		}
 
 		let hashedPassword = await bcrypt.hash(req.body.password, HASH_ROUNDS),
-			UUID = uuid(); // Create user id
-
-		// Create a token for the user
-		let claims = { iss: UUID },
-			jwt = nJwt.create(claims, req.app.locals.jwt_signingkey);
-		jwt.setExpiration(); // Never expires
-		let token = jwt.compact();
+			token = crypto.randomBytes(32 / 2).toString('hex').slice(0, 32), // Create a token for the user
+			id = shortid.generate(); // User's identifier
 
 		// Create new User
 		await this.database.User.create({
-			uuid: UUID,
+			token,
+			id,
 			username: req.body.username,
 			email: req.body.email,
-			password: hashedPassword,
-			token
+			password: hashedPassword
 		}, error => {
 			if (error)
 				console.error(error);
@@ -83,7 +78,7 @@ class RegisterPOST {
 		// Create unverified user for email verification
 		let unverifiedUser = await this.database.UnverifiedUser.create({
 			email: req.body.email,
-			key: UUID.replace(/-/g, '')
+			key: id
 		});
 
 		// Send verification email

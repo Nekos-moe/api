@@ -1,5 +1,4 @@
-const uuid = require('uuid'),
-	nJwt = require('njwt'),
+const crypto = require('crypto'),
 	bcrypt = require('bcrypt'),
 	HASH_ROUNDS = 10,
 	RateLimiter = require('../../../structures/RateLimiter');
@@ -49,14 +48,7 @@ class AccountPasswordPATCH {
 		req.user.password = await bcrypt.hash(req.body.newPassword, HASH_ROUNDS);
 
 		// Generate new token to force re-auth
-		let UUID = uuid(),
-			claims = { iss: UUID },
-			jwt = nJwt.create(claims, req.app.locals.jwt_signingkey);
-		jwt.setExpiration(); // Never expires
-		let token = jwt.compact();
-
-		req.user.uuid = UUID;
-		req.user.token = token;
+		req.user.token = crypto.randomBytes(32 / 2).toString('hex').slice(0, 32);
 		await req.user.save();
 
 		// Notify via email

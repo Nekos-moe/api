@@ -1,5 +1,4 @@
-const nJwt = require('njwt'),
-	fs = require('fs');
+const fs = require('fs');
 
 class APIv1 {
 	constructor(settings, database, mailTransport) {
@@ -27,13 +26,6 @@ class APIv1 {
 	async authorize(req, res, next) {
 		if (!req.headers.authorization)
 			return res.status(400).send({ message: "Authentication required" });
-
-		try {
-			if (!nJwt.verify(req.headers.authorization, req.app.locals.jwt_signingkey))
-				return res.status(401).send({ message: "Invalid token" });
-		} catch(e) {
-			return res.status(401).send({ message: "Invalid token", error: e });
-		}
 
 		req.user = await this.database.User.findOne({ token: req.headers.authorization }).select('+token +password');
 

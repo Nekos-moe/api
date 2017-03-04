@@ -25,8 +25,6 @@ app.set('trust proxy', 'loopback');
 app.set('env', 'production');
 app.disable('x-powered-by');
 
-app.locals.jwt_signingkey = fs.readFileSync(__dirname + '/jwt_signingkey.key');
-
 app.use(raven.requestHandler());
 app.use(raven.errorHandler());
 app.use(morgan(':req[cf-connecting-ip] :method :url :status :response-time[0]ms', {

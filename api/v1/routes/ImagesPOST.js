@@ -64,10 +64,13 @@ class ImagesPOST {
 				.jpeg({ quality: 90 })
 				.toFile(`${__dirname}/../../../image/${filename}.jpg`)
 				.then(async () => {
-					await this.database.Image.create({
+					let image = await this.database.Image.create({
 						id: filename,
 						originalHash,
-						uploader: req.user.username,
+						uploader: {
+							id: req.user.id,
+							username: req.user.username
+						},
 						nsfw: !!req.body.nsfw,
 						artist: req.body.artist || undefined,
 						tags: req.body.tags || '',
@@ -78,6 +81,14 @@ class ImagesPOST {
 					await req.user.save();
 
 					return res.status(201).location(`/image/${filename}.jpg`).send({
+						image: {
+							id: image.id,
+							createdAt: image.createdAt,
+							uploader: image.uploader,
+							tags: image.tags,
+							artist: image.artist,
+							nsfw: image.nsfw
+						},
 						image_url: `https://nekos.brussell.me/image/${filename}.jpg`,
 						post_url: `https://nekos.brussell.me/post/${filename}`
 					});

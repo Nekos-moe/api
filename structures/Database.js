@@ -4,11 +4,11 @@ const Mongoose = require('mongoose'),
 Mongoose.Promise = global.Promise;
 
 const userSchema = new Schema({
-	uuid: { type: String, select: false },
+	id: { type: String, unique: true, index: { unique: true } },
 	email: { type: String, maxlength: 70, trim: true, select: false },
 	password: { type: String, maxlength: 70, select: false },
 	username: { type: String, maxlength: 35, trim: true, unique: true, index: { unique: true } },
-	token: { type: String, select: false },
+	token: { type: String, select: false, unique: true, index: { unique: true } },
 	verified: { type: Boolean, default: false },
 	roles: [{ type: String, enum: ['admin', 'moderator'] }],
 	uploads: { type: Number, default: 0 },
@@ -27,7 +27,7 @@ const imageSchema = new Schema({
 	id: { type: String, unique: true, index: { unique: true } },
 	originalHash: { type: String, unique: true, index: { unique: true }, select: false },
 	createdAt: { type: Date, default: Date.now },
-	uploader: { type: String, required: true },
+	uploader: { type: Object, required: true },
 	nsfw: { type: Boolean, default: false },
 	tags: String,
 	artist: String,

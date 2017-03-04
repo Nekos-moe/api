@@ -1,5 +1,4 @@
-const uuid = require('uuid'),
-	nJwt = require('njwt'),
+const crypto = require('crypto'),
 	RateLimiter = require('../../../structures/RateLimiter');
 
 class AuthRegenPOST {
@@ -20,15 +19,8 @@ class AuthRegenPOST {
 	}
 
 	async run(req, res) {
-		// Generate new token
-		let UUID = uuid(),
-			claims = { iss: UUID },
-			jwt = nJwt.create(claims, req.app.locals.jwt_signingkey);
-		jwt.setExpiration(); // Never expires
-		let token = jwt.compact();
-
-		req.user.uuid = UUID;
-		req.user.token = token;
+		// Generate and save new token
+		req.user.token = crypto.randomBytes(32 / 2).toString('hex').slice(0, 32);
 		await req.user.save();
 
 		return res.sendSatus(204);
