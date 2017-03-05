@@ -33,8 +33,16 @@ class ImageSearchPOST {
 		// Add query options to the mongoose find query.
 		if (req.body.nsfw !== undefined)
 			options.nsfw = req.body.nsfw;
-		if (req.body.uploader)
-			options.uploader = req.body.uploader;
+		if (req.body.uploader) {
+			if (typeof req.body.uploader === 'string')
+				options['uploader.username'] = req.body.uploader;
+			else if (typeof req.body.uploader === 'object') {
+				if (req.body.uploader.id)
+					options['uploader.id'] = req.body.uploader.id;
+				if (req.body.uploader.username)
+					options['uploader.username'] = req.body.uploader.username;
+			}
+		}
 		if (req.body.artist)
 			options.artist = req.body.artist;
 		if (req.body.tags !== undefined && req.body.tags !== '') {

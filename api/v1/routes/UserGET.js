@@ -20,7 +20,7 @@ class UserGET {
 			if (!req.headers.authorization)
 				return res.status(400).send({ message: "Authentication required" });
 
-			const user = await this.database.User.findOne({ token: req.headers.authorization }).select('-_id -__v -password -uuid -token').lean();
+			const user = await this.database.User.findOne({ token: req.headers.authorization }).select('-_id -__v -password -token').lean();
 
 			if (!user)
 				return res.status(401).send({ message: "Invalid token" });
@@ -28,7 +28,7 @@ class UserGET {
 			return res.status(200).send({ user });
 		}
 
-		const user = await this.database.User.findOne({ id: req.params.id }).select('-_id -__v -password -id -token -email').lean();
+		const user = await this.database.User.findOne({ id: req.params.id, verified: true }).select('-_id -__v -password -token -email').lean();
 
 		if (!user)
 			return res.status(404).send({ message: "No user with that id" });

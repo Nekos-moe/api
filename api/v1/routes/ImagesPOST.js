@@ -49,8 +49,8 @@ class ImagesPOST {
 				// Remove spaces around commas. Also convert _ and - to space
 				req.body.tags = req.body.tags.replace(/( *,[ ,]*(\r?\n)*|\r\n+|\n+)/g, ',').replace(/[-_]/g, ' ');
 
-				if (req.body.tags.split(',').find(t => t.length > 30))
-					return res.status(400).send({ message: "Tags have a maximum length of 30 characters" });
+				if (req.body.tags.split(',').find(t => t.length > 40))
+					return res.status(400).send({ message: "Tags have a maximum length of 40 characters" });
 			}
 
 			if (req.body.artist) {
@@ -65,6 +65,8 @@ class ImagesPOST {
 				.resize(2000, 2000)
 				.max()
 				.withoutEnlargement()
+				.background({ r: 255, g: 255, b: 255, alpha: 1 })
+				.flatten()
 				.jpeg({ quality: 90 })
 				.toFile(`${__dirname}/../../../image/${filename}.jpg`)
 				.then(async () => {

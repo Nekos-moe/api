@@ -9,20 +9,17 @@ class RegisterVerifyPOST {
 
 	async run(req, res) {
 		// Find the user being verified
-		let unverifiedUser = await this.database.UnverifiedUser.findOne({ key: req.params.key });
+		let user = await this.database.User.findOne({ id: req.params.key }).select('+email');
 
 		// No matching account found
-		if (!unverifiedUser)
+		if (!user || user.verified)
 			return res.status(409).send({
 				message: 'Invalid key. Either the account has already been validated or the key was misspelled'
 			});
 
-		let user = await this.database.User.findOne({ email: unverifiedUser.email }).select('+email');
-
 		// Mark user as verified and save user. Then delete the unverified user doc
 		user.verified = true;
 		try {
-			await this.database.UnverifiedUser.remove({ key: unverifiedUser.key });
 			await user.save();
 		} catch (e) {
 			console.error(e.toString());

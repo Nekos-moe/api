@@ -18,10 +18,6 @@ const userSchema = new Schema({
 	favoritesReceived: { type: Number, default: 0 },
 	createdAt: { type: Date, default: Date.now }
 });
-const unverifiedUserSchema = new Schema({
-	email: { type: String, unique: true, index: { unique: true } },
-	key: String
-});
 
 const imageSchema = new Schema({
 	id: { type: String, unique: true, index: { unique: true } },
@@ -47,7 +43,6 @@ class Database {
 			auth: { authdb: 'admin' }
 		});
 		this.User = this.db.model('User', userSchema);
-		this.UnverifiedUser = this.db.model('UnverifiedUser', unverifiedUserSchema);
 		this.Image = this.db.model('Image', imageSchema);
 
 		this.db.on('error', console.error.bind(console, 'Mongoose error:'));
