@@ -11,8 +11,8 @@ class AccountPasswordPATCH {
 		this.transporter = controller.transporter;
 		this.authorize = controller.authorize;
 
-		// One per 10 seconds because of the computation required
-		this.rateLimiter = new RateLimiter({ max: 1 });
+		// One per minute because of the computation/tasks required
+		this.rateLimiter = new RateLimiter({ windowMS: 60000, max: 1 });
 
 		this.router.patch(
 			this.path,

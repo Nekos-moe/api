@@ -1,0 +1,17 @@
+port = 8080
+[mongo]
+	user = "nyaaaa"
+	pass = "nyaaaa"
+	db = "nyaaaaa"
+	port = 27017
+[email]
+	from = 'n@y.a.a'
+[raven]
+	url = 'https://111111@sentry.io/111111'
+[apiSettings]
+	[apiSettings.v1]
+		allowAccountCreation = true
+		allowImageUploads = true
+		imageSaveQuality = 90
+		imageMaxWidth = 2000
+		imageMaxHeight = 2000

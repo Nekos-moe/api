@@ -5,11 +5,12 @@ const bcrypt = require('bcrypt'),
 	RateLimiter = require('../../../structures/RateLimiter');
 
 class RegisterPOST {
-	constructor(controller) {
+	constructor(controller, settings) {
 		this.path = '/register';
 		this.router = controller.router;
 		this.database = controller.database;
 		this.mailTransport = controller.mailTransport;
+		this.allowAccountCreation = settings.allowAccountCreation;
 
 		this.rateLimiter = new RateLimiter({ windowMS: 60000, max: 1 }); // 1 per minute
 
@@ -21,6 +22,11 @@ class RegisterPOST {
 	}
 
 	async run(req, res) {
+		if (!this.allowAccountCreation) {
+			this.rateLimiter.unlimit(req, res);
+			return res.status(403).send({ message: "Account creation not allowed" });
+		}
+
 		// Reject bad body
 		if (!req.body || !req.body.username || !req.body.email || !req.body.password) {
 			this.rateLimiter.unlimit(req, res);
@@ -86,9 +92,9 @@ class RegisterPOST {
 		return this.mailTransport.sendHTMLMail('verify', {
 			to: user.email,
 			subject: 'Verify your nekos.brussell.me account',
-			text: 'Open this link to verify your account: https://nekos.brussell.me/register/verify/' + user.key,
+			text: 'Open this link to verify your account: https://nekos.brussell.me/api/v1/register/verify/' + user.key,
 		}, {
-			key: user.key
+			key: user.id
 		}).then(() => res.sendStatus(201)).catch(error => {
 			console.error(error);
 			return res.status(500).send({ messsage: 'Error sending verification email' });

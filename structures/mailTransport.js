@@ -4,7 +4,8 @@ const nodemailer = require('nodemailer'),
 		verify: fs.readFileSync(__dirname + '/../assets/verify.html').toString()
 	},
 	transport = process.env.NODE_ENV === 'production' ? nodemailer.createTransport({
-		name: 'no-repy',
+		name: 'no-reply',
+		port: 25,
 		tls: { rejectUnauthorized: false }
 	}) : null;
 

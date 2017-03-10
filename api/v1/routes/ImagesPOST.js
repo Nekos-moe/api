@@ -14,11 +14,16 @@ const multer = require('multer'),
 	RateLimiter = require('../../../structures/RateLimiter');
 
 class ImagesPOST {
-	constructor(controller) {
+	constructor(controller, settings) {
 		this.path = '/images';
 		this.router = controller.router;
 		this.database = controller.database;
 		this.authorize = controller.authorize;
+
+		this.allowImageUploads = settings.allowImageUploads;
+		this.imageSaveQuality = settings.imageSaveQuality;
+		this.imageMaxWidth = settings.imageMaxWidth;
+		this.imageMaxHeight = settings.imageMaxHeight;
 
 		this.rateLimiter = new RateLimiter({ max: 2 }); // 2/10 limit
 
@@ -31,6 +36,11 @@ class ImagesPOST {
 	}
 
 	async run(req, res) {
+		if (!this.allowImageUploads && !req.user.roles.includes('admin')) {
+			this.rateLimiter.unlimit(req, res);
+			return res.status(403).send({ message: "Image uploads not allowed" });
+		}
+
 		upload(req, res, async error => {
 			if (error)
 				return res.status(400).send({ message: error });
@@ -62,12 +72,12 @@ class ImagesPOST {
 			let filename = shortid.generate();
 
 			return sharp(req.file.buffer)
-				.resize(2000, 2000)
+				.resize(this.imageMaxWidth, this.imageMaxHeight)
 				.max()
 				.withoutEnlargement()
 				.background({ r: 255, g: 255, b: 255, alpha: 1 })
 				.flatten()
-				.jpeg({ quality: 90 })
+				.jpeg({ quality: this.imageSaveQuality })
 				.toFile(`${__dirname}/../../../image/${filename}.jpg`)
 				.then(async () => {
 					let image = await this.database.Image.create({

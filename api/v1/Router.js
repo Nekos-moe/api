@@ -17,7 +17,7 @@ class APIv1 {
 				if (!file.endsWith('js'))
 					continue;
 
-				let route = new (require(__dirname + '/routes/' + file))(this);
+				let route = new (require(__dirname + '/routes/' + file))(this, settings.apiSettings.v1);
 				this.routes[route.path] = route;
 			}
 		});

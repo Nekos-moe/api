@@ -32,9 +32,9 @@ class RegisterVerifyPOST {
 		return this.mailTransport.sendHTMLMail('verify', {
 			to: user.email,
 			subject: 'Verify your nekos.brussell.me account',
-			text: 'Open this link to verify your account: https://nekos.brussell.me/register/verify/' + user.key,
+			text: 'Open this link to verify your account: https://nekos.brussell.me/api/v1/register/verify/' + user.key,
 		}, {
-			key: user.key
+			key: user.id
 		}).then(() => res.sendStatus(201)).catch(error => {
 			console.error(error);
 			return res.status(500).send({ messsage: 'Error sending verification email' });
