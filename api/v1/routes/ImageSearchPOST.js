@@ -1,5 +1,9 @@
 const RateLimiter = require('../../../structures/RateLimiter');
 
+function escapeRegExp(str) {
+	return str.replace(/[-[\]/{}()*+?.\\^$|]/g, "\\$&");
+}
+
 class ImageSearchPOST {
 	constructor(controller) {
 		this.path = '/images/search';
@@ -43,8 +47,11 @@ class ImageSearchPOST {
 					options['uploader.username'] = req.body.uploader.username;
 			}
 		}
-		if (req.body.artist)
-			options.artist = req.body.artist;
+		if (req.body.artist) {
+			// Sometimes artist has an alternate name in ()
+			// This allows users to search by using either name.
+			options.artist = new RegExp(`(?:\\(|^)${escapeRegExp(req.body.artist)} *(?:\\)|$|\\(|)`, 'i');
+		}
 		if (req.body.tags !== undefined && req.body.tags !== '') {
 			/* What we are doing here is bypassing a mongodb $text restriction.
 			 * If you only include negate expressions then nothing will match so
