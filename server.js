@@ -8,13 +8,7 @@ const express = require('express'),
 	Database = require('./structures/Database'),
 	mailTransport = require('./structures/mailTransport'),
 	db = new Database(settings.mongo),
-	raven = require('raven'),
-	datadog = require('connect-datadog')({
-		tags: ['app:catgirls-api'],
-		response_code: true,
-		path: true,
-		method: true
-	});
+	raven = require('raven');
 
 mailTransport.config({ from: settings.email.from });
 
@@ -25,6 +19,15 @@ if (process.env.NODE_ENV === 'production') {
 		autoBreadcrumbs: { 'http': true },
 		captureUnhandledRejections: true
 	}).install();
+
+	var datadog = require('connect-datadog')({
+		tags: ['app:catgirls-api'],
+		response_code: true,
+		path: true,
+		method: true
+	});
+
+	app.use(datadog);
 }
 
 app.set('trust proxy', 'loopback');
@@ -39,8 +42,6 @@ app.use(morgan(':req[cf-connecting-ip] :method :url :status :response-time[0]ms'
 // Parse data into req.body
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-
-app.use(datadog);
 
 // In dev we need a way to get images
 if (process.env.NODE_ENV === 'development')
