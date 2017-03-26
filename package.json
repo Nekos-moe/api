@@ -1,6 +1,6 @@
 {
 	"name": "catgirls-api",
-	"version": "0.17.1",
+	"version": "0.18.0",
 	"description": "An API for neko lovers.",
 	"private": true,
 	"main": "server.js",
@@ -20,7 +20,7 @@
 		"bcrypt": "^1.0.2",
 		"shortid": "^2.2.6",
 		"sharp": "^0.17.2",
-		"raven": "^1.1.4",
+		"raven": "^1.2.0",
 		"cross-env": "*",
 		"md5": "^2.2.1",
 		"connect-datadog": "^0.0.6"

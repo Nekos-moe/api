@@ -33,7 +33,7 @@ class ImagesPATCH {
 
 		let image = await this.database.Image.findOne({ id: req.params.id });
 
-		if (req.user.username !== image.uploader)
+		if (req.user.id !== image.uploader.id)
 			return res.status(403).send({ message: 'You are not the uploader of this image' });
 
 		image.tags = req.body.tags || image.tags;

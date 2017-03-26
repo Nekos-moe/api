@@ -26,6 +26,8 @@ class RegisterVerifyPOST {
 			return res.status(500).send({ message: 'Error updating database' });
 		}
 
+		if (req.accepts('html'))
+			return res.redirect('https://nekos.brussell.me/')
 		return res.sendStatus(204);
 	}
 }
