@@ -41,6 +41,23 @@ class ImagesPOST {
 			return res.status(403).send({ message: "Image uploads not allowed" });
 		}
 
+		if (req.body.tags) {
+			// Remove spaces around commas. Also convert _ and - to space
+			req.body.tags = req.body.tags.replace(/( *,[ ,]*(\r?\n)*|\r\n+|\n+)/g, ',').replace(/[-_]/g, ' ');
+
+			if (req.body.tags.split(',').length > 50)
+				return res.status(400).send({ message: "A post can only have up to 50 tags" });
+
+			if (req.body.tags.split(',').find(t => t.length > 40))
+				return res.status(400).send({ message: "Tags have a maximum length of 40 characters" });
+		}
+
+		if (req.body.artist) {
+			if (req.body.artist.length > 30)
+				return res.status(400).send({ message: "The artist field has a maximum length of 30 characters" });
+			req.body.artist = req.body.artist.replace(/_/g, ' ');
+		}
+
 		upload(req, res, async error => {
 			if (error)
 				return res.status(400).send({ message: error });
@@ -54,20 +71,6 @@ class ImagesPOST {
 			let existing = await this.database.Image.findOne({ originalHash });
 			if (existing)
 				return res.status(409).send({ message: "Image already uploaded", id: existing.id });
-
-			if (req.body.tags) {
-				// Remove spaces around commas. Also convert _ and - to space
-				req.body.tags = req.body.tags.replace(/( *,[ ,]*(\r?\n)*|\r\n+|\n+)/g, ',').replace(/[-_]/g, ' ');
-
-				if (req.body.tags.split(',').find(t => t.length > 40))
-					return res.status(400).send({ message: "Tags have a maximum length of 40 characters" });
-			}
-
-			if (req.body.artist) {
-				if (req.body.artist.length > 30)
-					return res.status(400).send({ message: "The artist field has a maximum length of 30 characters" });
-				req.body.artist = req.body.artist.replace(/_/g, ' ');
-			}
 
 			let filename = shortid.generate();
 

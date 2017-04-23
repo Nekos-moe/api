@@ -24,8 +24,11 @@ class ImagesPATCH {
 		if (req.body.tags) {
 			req.body.tags = req.body.tags.replace(/ *, */g, ',');
 
-			if (req.body.tags.split(',').find(t => t.length > 30))
-				return res.status(400).send({ message: "Tags have a maximum length of 30 characters" });
+			if (req.body.tags.split(',').length > 50)
+				return res.status(400).send({ message: "A post can only have up to 50 tags" });
+
+			if (req.body.tags.split(',').find(t => t.length > 40))
+				return res.status(400).send({ message: "Tags have a maximum length of 40 characters" });
 		}
 
 		if (req.body.artist && req.body.artist.length > 30)

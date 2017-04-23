@@ -48,7 +48,7 @@ class RegisterPOST {
 			});
 		}
 
-		if (!/^[^.@]+@[^.@]+\.[^.@]+$/.test(req.body.email)) {
+		if (!/^[^@]+@[^.@]+\.[^.@]+$/.test(req.body.email)) {
 			this.rateLimiter.unlimit(req, res);
 			return res.status(400).send({
 				message: 'Invalid email'
@@ -56,10 +56,10 @@ class RegisterPOST {
 		}
 
 		// Password requirements
-		if (req.body.password.length < 8 || !/[a-z]/.test(req.body.password) || !/[A-Z]/.test(req.body.password) || !/[0-9]/.test(req.body.password)) {
+		if (req.body.password.length < 8) {
 			this.rateLimiter.unlimit(req, res);
 			return res.status(400).send({
-				message: 'Your password must be at least 8 characters, have uppercase and lowercase alphabetical letters, and contain numbers.'
+				message: 'Your password must be at least 8 characters.'
 			});
 		}
 
