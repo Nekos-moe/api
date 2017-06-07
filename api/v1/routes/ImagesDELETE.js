@@ -30,8 +30,18 @@ class ImagesDELETE {
 		// Delete image from MongoDB
 		await this.database.Image.remove({ id: image.id });
 		req.user.uploads--;
+
+		if (image.likes > 0) {
+			await this.database.User.updateMany({ likes: { $in: [image.id] } }, { $pull: { likes: image.id } });
+			req.user.likesReceived--;
+		}
+
+		if (image.favorites > 0) {
+			await this.database.User.updateMany({ favorites: { $in: [image.id] } }, { $pull: { favorites: image.id } });
+			req.user.favoritesReceived--;
+		}
+
 		await req.user.save();
-		// TODO: Remove from likes and favorites of users
 
 		return res.sendStatus(204);
 	}
