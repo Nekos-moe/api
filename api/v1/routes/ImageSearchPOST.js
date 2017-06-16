@@ -10,7 +10,7 @@ class ImageSearchPOST {
 		this.router = controller.router;
 		this.database = controller.database;
 
-		this.rateLimiter = new RateLimiter({ max: 10 }); // 10/10
+		this.rateLimiter = new RateLimiter({ max: 5 }); // 10/10
 
 		this.router.post(
 			this.path,
