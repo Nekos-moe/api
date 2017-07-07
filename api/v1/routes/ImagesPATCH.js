@@ -22,7 +22,7 @@ class ImagesPATCH {
 			return res.status(400).send({ message: "No body" });
 
 		if (req.body.tags) {
-			req.body.tags = req.body.tags.replace(/ *, */g, ',');
+			req.body.tags = req.body.tags.replace(/( *,[ ,]*(\r?\n)*|\r\n+|\n+)/g, ',').replace(/[-_]/g, ' ');
 
 			if (req.body.tags.split(',').length > 50)
 				return res.status(400).send({ message: "A post can only have up to 50 tags" });
@@ -40,7 +40,7 @@ class ImagesPATCH {
 			return res.status(403).send({ message: 'You are not the uploader of this image' });
 
 		image.tags = req.body.tags || image.tags;
-		image.artist = req.body.artist !== undefined ? req.body.artist || undefined : image.artist;
+		image.artist = req.body.artist !== undefined ? req.body.artist.replace(/_/g, ' ') || undefined : image.artist;
 		image.nsfw = !!(req.body.nsfw === undefined ? image.nsfw : req.body.nsfw);
 		await image.save();
 

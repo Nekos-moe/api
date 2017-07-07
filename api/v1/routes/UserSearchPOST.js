@@ -27,7 +27,7 @@ class UserSearchPOST {
 			let resp;
 
 			if (typeof req.body.query === 'string' && req.body.query) {
-				resp = await this.database.User.find({ username: new RegExp(escapeRegExp(req.body.query), 'i') })
+				resp = await this.database.User.find({ username: new RegExp(escapeRegExp(req.body.query), 'i'), verified: true })
 					.sort({ likesReceived: -1, favoritesReceived: -1 }).select('-_id -__v').lean().exec();
 
 				resp.sort((a, b) => (a.username.length - req.body.query.length) - (b.username.length - req.body.query.length));
@@ -37,7 +37,7 @@ class UserSearchPOST {
 				else
 					resp = resp.slice(0, typeof req.body.limit === 'number' && req.body.limit < 100 ? req.body.limit : 20);
 			} else {
-				let query = this.database.User.find({ }).sort({ likesReceived: -1, favoritesReceived: -1 });
+				let query = this.database.User.find({ verified: true }).sort({ likesReceived: -1, favoritesReceived: -1 });
 
 				if (typeof req.body.skip === 'number' && req.body.skip >= 0)
 					query.skip(req.body.skip);
