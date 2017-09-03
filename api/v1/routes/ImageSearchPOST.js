@@ -10,7 +10,7 @@ class ImageSearchPOST {
 		this.router = controller.router;
 		this.database = controller.database;
 
-		this.rateLimiter = new RateLimiter({ max: 5 }); // 10/10
+		this.rateLimiter = new RateLimiter({ max: 5 }); // 5/10
 
 		this.router.post(
 			this.path,
@@ -21,7 +21,7 @@ class ImageSearchPOST {
 
 	async run(req, res) {
 		if (!req.body)
-			return res.status(400).send({ message: "No body" });
+			return res.status(400).send({ message: 'No body' });
 
 		// If searching by ID skip search
 		if (req.body.id) {
@@ -73,10 +73,13 @@ class ImageSearchPOST {
 			}
 		}
 		if (req.body.sort) {
-			if (req.body.sort === 'recent')
+			if (req.body.sort === 'oldest')
+				sort._id = 1;
+			else if (req.body.sort === 'likes') {
+				sort.likes = -1;
 				sort._id = -1;
-			else if (req.body.sort === 'likes')
-				sort.likes = 1;
+			} else
+				sort._id = -1;
 		}
 
 		let query = this.database.Image.find(options).sort(sort);
@@ -84,8 +87,12 @@ class ImageSearchPOST {
 			query.lt('createdAt', req.body.posted_before);
 		if (req.body.posted_after !== undefined)
 			query.gt('createdAt', req.body.posted_after);
-		if (typeof req.body.skip === 'number' && req.body.skip >= 0)
+		if (typeof req.body.skip === 'number' && req.body.skip >= 0) {
+			if (req.body.skip > 2500)
+				return res.status(400).send({ message: 'Cannot skip more than 2,500 images' });
+
 			query.skip(req.body.skip);
+		}
 
 		// Max limit of 50
 		let limit = typeof req.body.limit === 'number' && req.body.limit < 50 ? req.body.limit : 20;

@@ -44,8 +44,10 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // In dev we need a way to get images
-if (process.env.NODE_ENV === 'development')
+if (process.env.NODE_ENV === 'development') {
 	app.use('/image', express.static('image', { index: false, extensions: ['jpg'] }));
+	app.use('/thumbnail', express.static('thumbnail', { index: false, extensions: ['jpg'] }));
+}
 
 app.use((req, res, next) => {
 	res.set('Access-Control-Allow-Origin', '*');

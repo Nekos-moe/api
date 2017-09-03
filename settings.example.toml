@@ -13,5 +13,6 @@ port = 8080
 		allowAccountCreation = true
 		allowImageUploads = true
 		imageSaveQuality = 90
+		thumbnailSaveQuality = 85
 		imageMaxWidth = 2000
 		imageMaxHeight = 2000

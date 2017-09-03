@@ -22,6 +22,7 @@ class ImagesPOST {
 
 		this.allowImageUploads = settings.allowImageUploads;
 		this.imageSaveQuality = settings.imageSaveQuality;
+		this.thumbnailSaveQuality = settings.thumbnailSaveQuality;
 		this.imageMaxWidth = settings.imageMaxWidth;
 		this.imageMaxHeight = settings.imageMaxHeight;
 
@@ -74,6 +75,15 @@ class ImagesPOST {
 				return res.status(409).send({ message: "Image already uploaded", id: existing.id });
 
 			let filename = shortid.generate();
+
+			await sharp(req.file.buffer)
+				.resize(360, 420)
+				.max()
+				.withoutEnlargement()
+				.background({ r: 255, g: 255, b: 255, alpha: 1 })
+				.flatten()
+				.jpeg({ quality: this.thumbnailSaveQuality })
+				.toFile(`${__dirname}/../../../thumbnail/${filename}.jpg`);
 
 			return sharp(req.file.buffer)
 				.resize(this.imageMaxWidth, this.imageMaxHeight)

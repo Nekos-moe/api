@@ -40,8 +40,10 @@ jspm_packages
 settings.toml
 *.key
 
-# Images directory
+# Image directories
 image/
+thumbnail/
 
 # Other
 *.bat
+.idea/

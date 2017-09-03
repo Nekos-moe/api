@@ -38,6 +38,7 @@ const imageSchema = new Schema({
 class Database {
 	constructor(settings) {
 		this.db = Mongoose.createConnection(`mongodb://localhost:${settings.port}/${settings.db}`, {
+			useMongoClient: true,
 			user: settings.user,
 			pass: settings.pass,
 			auth: { authdb: 'admin' }

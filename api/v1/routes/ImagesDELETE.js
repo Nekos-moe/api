@@ -27,6 +27,7 @@ class ImagesDELETE {
 			return res.status(403).send({ message: 'You are not the uploader of this image' });
 
 		fs.unlinkSync(`${__dirname}/../../../image/${image.id}.jpg`);
+		fs.unlinkSync(`${__dirname}/../../../thumbnail/${image.id}.jpg`);
 		// Delete image from MongoDB
 		await this.database.Image.remove({ id: image.id });
 		req.user.uploads--;
