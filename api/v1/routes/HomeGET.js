@@ -16,7 +16,7 @@ class HomeGET {
 				"POST /register/resend": "Resend a verification email",
 				"POST /auth": "Get token from username and password",
 				"POST /auth/regen": "Reset an account's token",
-				"PATCH /account/edit": "Edit account information",
+				"PATCH /account/password": "Edit account password",
 				"GET /images/:id": "Get an image",
 				"PATCH /images/:id": "Update an image's metadata",
 				"DELETE /images/:id": "Delete an image",

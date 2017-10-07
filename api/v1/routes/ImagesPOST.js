@@ -46,22 +46,32 @@ class ImagesPOST {
 			if (error)
 				return res.status(400).send({ message: error });
 
+			if (!req.user.verified)
+				return res.status(403).send({ message: 'You must have a verified account to post images' });
+
 			if (req.body.tags) {
+				// Convert new tags to old format for processing
+				if (Array.isArray(req.body.tags))
+					req.body.tags = req.body.tags.join(',');
+
 				// Remove spaces around commas. Also convert _ and - to space
-				req.body.tags = req.body.tags.replace(/( *,[ ,]*(\r?\n)*|\r\n+|\n+)/g, ',').replace(/[-_]/g, ' ');
+				req.body.tags = req.body.tags.replace(/( *,[ ,]*(\r?\n)*|\r\n+|\n+)/g, ',').replace(/[-_]/g, ' ').replace(/(^,|,(?:,+|$))/g, '');
 
-				if (req.body.tags.split(',').length > 50)
-					return res.status(400).send({ message: "A post can only have up to 50 tags" });
+				if (req.body.tags.split(',').length > 80)
+					return res.status(400).send({ message: "A post can only have up to 80 tags" });
 
-				if (req.body.tags.split(',').find(t => t.length > 40))
-					return res.status(400).send({ message: "Tags have a maximum length of 40 characters" });
+				if (req.body.tags.split(',').find(t => t.length > 50))
+					return res.status(400).send({ message: "Tags have a maximum length of 50 characters" });
 			}
 
 			if (req.body.artist) {
 				req.body.artist = req.body.artist.replace(/_/g, ' ');
 
-				if (req.body.artist.length > 30)
-					return res.status(400).send({ message: "The artist field has a maximum length of 30 characters" });
+				if (req.body.artist.length > 40)
+					return res.status(400).send({ message: "The artist field has a maximum length of 40 characters" });
+
+				if (req.body.artist.toLowerCase() === 'unknown')
+					req.body.artist = undefined;
 			}
 
 			if (!req.file || !req.body)
@@ -94,7 +104,7 @@ class ImagesPOST {
 				.jpeg({ quality: this.imageSaveQuality })
 				.toFile(`${__dirname}/../../../image/${filename}.jpg`)
 				.then(async () => {
-					let image = await this.database.Image.create({
+					let image = await this.database.PendingImage.create({
 						id: filename,
 						originalHash,
 						uploader: {
@@ -103,12 +113,11 @@ class ImagesPOST {
 						},
 						nsfw: !!req.body.nsfw,
 						artist: req.body.artist || undefined,
-						tags: req.body.tags || '',
-						comments: []
+						tags: req.body.tags ? req.body.tags.split(/ *, */) : []
 					});
 
-					req.user.uploads = req.user.uploads + 1;
-					await req.user.save();
+					// req.user.uploads = req.user.uploads + 1;
+					// await req.user.save();
 
 					return res.status(201).location(`/image/${filename}.jpg`).send({
 						image: {

@@ -18,8 +18,13 @@ class ImagesGET {
 
 	async run(req, res) {
 		let image = await this.database.Image.findOne({ id: req.params.id }).select('-_id -__v').lean().exec();
-		if (!image)
-			return res.status(404).send({ message: 'Image not found' });
+		if (!image) {
+			image = await this.database.PendingImage.findOne({ id: req.params.id }).select('-_id -__v').lean().exec();
+			if (!image)
+				return res.status(404).send({ message: 'Image not found' });
+
+			image.pending = true;
+		}
 
 		return res.status(200).send({ image });
 	}

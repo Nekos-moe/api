@@ -10,7 +10,7 @@ const userSchema = new Schema({
 	username: { type: String, maxlength: 35, trim: true, unique: true, index: { unique: true } },
 	token: { type: String, select: false, unique: true, index: { unique: true } },
 	verified: { type: Boolean, default: false },
-	roles: [{ type: String, enum: ['admin', 'reviewReports', 'editPosts'] }],
+	roles: [{ type: String, enum: ['admin', 'approver', 'reviewReports', 'editPosts'] }],
 	uploads: { type: Number, default: 0 },
 	likes: [String],
 	favorites: [String],
@@ -24,8 +24,9 @@ const imageSchema = new Schema({
 	originalHash: { type: String, unique: true, index: { unique: true }, select: false },
 	createdAt: { type: Date, default: Date.now },
 	uploader: { type: Object, required: true },
+	approver: { type: Object },
 	nsfw: { type: Boolean, default: false },
-	tags: { type: String, index: "text" },
+	tags: [{ type: String, index: "text" }],
 	artist: String,
 	likes: { type: Number, default: 0 },
 	favorites: { type: Number, default: 0 },
@@ -33,6 +34,16 @@ const imageSchema = new Schema({
 		user: String,
 		text: String
 	}]
+});
+
+const pendingImageSchema = new Schema({
+	id: { type: String, unique: true, index: { unique: true } },
+	originalHash: { type: String, select: false },
+	createdAt: { type: Date, default: Date.now },
+	uploader: { type: Object, required: true },
+	nsfw: { type: Boolean, default: false },
+	tags: [{ type: String, index: "text" }],
+	artist: String
 });
 
 class Database {
@@ -45,6 +56,7 @@ class Database {
 		});
 		this.User = this.db.model('User', userSchema);
 		this.Image = this.db.model('Image', imageSchema);
+		this.PendingImage = this.db.model('PendingImage', pendingImageSchema);
 
 		this.db.on('error', console.error.bind(console, 'Mongoose error:'));
 		this.db.on('open', () => console.log('Mongoose Connected'));

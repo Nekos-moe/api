@@ -26,7 +26,7 @@ class ImageRandomGET {
 		} else
 			agg.sample(1);
 
-		let images = await agg.exec();
+		let images = await agg.project('-_id -__v').exec();
 
 		return res.status(200).send({ images });
 	}

@@ -34,7 +34,7 @@ class RegisterPOST {
 		}
 
 		// Username requirements
-		if (/[@\n]/.test(req.body.username)) {
+		if (/[@\r\n]/.test(req.body.username)) {
 			this.rateLimiter.unlimit(req, res);
 			return res.status(400).send({
 				message: 'Your username must not contain a new line character or @ symbol.'
