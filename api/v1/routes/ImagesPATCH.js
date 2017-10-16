@@ -22,6 +22,10 @@ class ImagesPATCH {
 			return res.status(400).send({ message: "No body" });
 
 		if (req.body.tags) {
+			// Convert new tags to old format for processing
+			if (Array.isArray(req.body.tags))
+				req.body.tags = req.body.tags.join(',');
+
 			req.body.tags = req.body.tags.replace(/( *,[ ,]*(\r?\n)*|\r\n+|\n+)/g, ',').replace(/[-_]/g, ' ').replace(/(^,|,(?:,+|$))/g, '');
 
 			if (req.body.tags.split(',').length > 80)
@@ -42,7 +46,7 @@ class ImagesPATCH {
 		if (req.user.id !== image.uploader.id && !req.user.roles || !(req.user.roles.includes('admin') || req.user.roles.includes('approver')))
 			return res.status(403).send({ message: 'You are not the uploader of this image' });
 
-		image.tags = req.body.tags || image.tags;
+		image.tags = req.body.tags.split(/ *, */) || image.tags;
 		image.artist = req.body.artist !== undefined ? req.body.artist.replace(/_/g, ' ') || undefined : image.artist;
 		image.nsfw = !!(req.body.nsfw === undefined ? image.nsfw : req.body.nsfw);
 		await image.save();

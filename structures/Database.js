@@ -59,7 +59,17 @@ class Database {
 		this.PendingImage = this.db.model('PendingImage', pendingImageSchema);
 
 		this.db.on('error', console.error.bind(console, 'Mongoose error:'));
-		this.db.on('open', () => console.log('Mongoose Connected'));
+		this.db.on('open', async () => {
+			console.log('Mongoose Connected');
+
+			let oldFormatImages = await this.Image.find({ $nor: [{ tags: { $elemMatch: { $exists: true } } }, { tags: [] }] });
+
+			for (let image of oldFormatImages) {
+				let newTags = image.tags[0].split(/ *, */).filter(e => e !== '');
+				image.tags = newTags;
+				await image.save();
+			}
+		});
 	}
 }
 
