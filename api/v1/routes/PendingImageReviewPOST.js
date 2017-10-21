@@ -22,12 +22,12 @@ class PendingImageReviewPOST {
 		if (!req.user.roles || !req.user.roles.includes('admin') && !req.user.roles.includes('approver'))
 			return res.status(403).send({ message: "You do not have permission to approve posts" });
 
-		let image = await this.database.PendingImage.find({ id: req.params.id }).select('-_id -__v').exec();
+		let image = await this.database.PendingImage.findOne({ id: req.params.id }).select('+originalHash');
 
 		if (!image)
 			return res.status(404).send({ message: 'Image not found' });
 
-		let user = await this.database.User.findOne({ id: image.uploader.id }).select('-_id -__v -email -password -token')
+		let user = await this.database.User.findOne({ id: image.uploader.id });
 
 		if (req.body.action === 'approve') {
 			await this.database.Image.create({
@@ -41,7 +41,8 @@ class PendingImageReviewPOST {
 				nsfw: image.nsfw,
 				artist: image.artist,
 				tags: image.tags,
-				comments: []
+				comments: [],
+				createdAt: image.createdAt
 			});
 
 			user.uploads++;

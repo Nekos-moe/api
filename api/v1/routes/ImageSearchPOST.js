@@ -58,13 +58,9 @@ class ImageSearchPOST {
 			 * we turn it into a $not regex that matches negated tags and returns
 			 * the rest. This is needed for tag blacklists.
 			*/
-			if (req.body.tags.split(/-"[^"]+"/).join('').trim() === '') {
+			if (req.body.tags.split(/-"?[^",]+"?(?:, *)?/).join('').trim() === '') {
 				options.tags = {
-					$not: new RegExp(
-						"(,|^)(" +
-						req.body.tags.split(/" -"/).join('|').substring(2).slice(0, -1) +
-						")(,|$)"
-					)
+					$nin: req.body.tags.match(/(^|, *)-[^,]+/g).map(e => e.replace(/,? *-|"/g, ''))
 				};
 			} else {
 				options.$text = { $search: req.body.tags };
