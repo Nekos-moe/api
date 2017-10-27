@@ -23,7 +23,8 @@
 		"raven": "^1.2.0",
 		"cross-env": "*",
 		"md5": "^2.2.1",
-		"connect-datadog": "^0.0.6"
+		"connect-datadog": "^0.0.6",
+		"node-dogstatsd": "^0.0.6"
 	},
 	"author": "brussell98",
 	"license": "MIT"

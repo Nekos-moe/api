@@ -21,6 +21,7 @@ if (process.env.NODE_ENV === 'production') {
 	}).install();
 
 	var datadog = require('connect-datadog')({
+		dogstatsd: new (require("node-dogstatsd")).StatsD(settings.statsd.host, settings.statsd.port),
 		tags: ['app:catgirls-api'],
 		response_code: true,
 		path: true,
