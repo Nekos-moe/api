@@ -5,7 +5,7 @@ class APIv1 {
 		this.database = database;
 		this.mailTransport = mailTransport;
 		this.router = require('express').Router();
-		this.routes = {};
+		this.routes = { };
 		this.path = '/api/v1';
 		this.settings = settings
 
@@ -20,6 +20,15 @@ class APIv1 {
 				let route = new (require(__dirname + '/routes/' + file))(this, settings.apiSettings.v1);
 				this.routes[route.path] = route;
 			}
+		});
+
+		// Must load after
+		this.router.use((req, res, next) => {
+			if (!req.headers['user-agent'] || !req.route)
+				return next();
+
+			statsd.increment('catgirls.express.useragents', 1, null, ['ua:' + req.headers['user-agent'].toLowerCase(), 'route:' + req.route.path, 'method:' + req.method]);
+			return next();
 		});
 	}
 

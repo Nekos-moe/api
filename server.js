@@ -10,7 +10,7 @@ const express = require('express'),
 	db = new Database(settings.mongo),
 	raven = require('raven');
 
-mailTransport.config({ from: settings.email.from });
+mailTransport.config({ from: settings.email.from, test: settings.email.test });
 
 if (process.env.NODE_ENV === 'production') {
 	raven.disableConsoleAlerts();
@@ -20,8 +20,13 @@ if (process.env.NODE_ENV === 'production') {
 		captureUnhandledRejections: true
 	}).install();
 
+	app.use(raven.requestHandler());
+	app.use(raven.errorHandler());
+
+	global.statsd = new (require("node-dogstatsd")).StatsD(settings.statsd.host, settings.statsd.port);
+
 	var datadog = require('connect-datadog')({
-		dogstatsd: new (require("node-dogstatsd")).StatsD(settings.statsd.host, settings.statsd.port),
+		dogstatsd: statsd,
 		tags: ['app:catgirls-api'],
 		response_code: true,
 		path: true,
@@ -29,14 +34,16 @@ if (process.env.NODE_ENV === 'production') {
 	});
 
 	app.use(datadog);
+} else {
+	global.statsd = new Proxy({ }, {
+		get: () => { () => { } }
+	});
 }
 
 app.set('trust proxy', 'loopback');
 app.set('env', 'production');
 app.disable('x-powered-by');
 
-app.use(raven.requestHandler());
-app.use(raven.errorHandler());
 app.use(morgan(':req[cf-connecting-ip] :method :url :status :response-time[0]ms', {
 	skip: (req, res) => res.statusCode < 400 // Only log failed requests/responses
 }));

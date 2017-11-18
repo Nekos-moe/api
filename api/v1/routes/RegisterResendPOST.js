@@ -29,15 +29,17 @@ class RegisterVerifyPOST {
 			return res.status(409).send({ message: 'This account has already been verified' });
 
 		// Send verification email
-		return this.mailTransport.sendHTMLMail('verify', {
+		return this.mailTransport.sendHTMLMail('welcome', {
 			to: user.email,
 			subject: 'Verify your nekos.brussell.me account',
 			text: 'Open this link to verify your account: https://nekos.brussell.me/api/v1/register/verify/' + user.key,
 		}, {
-			key: user.id
+			key: user.id,
+			userId: user.id,
+			username: user.username.replace(/</g, '&lt;').replace(/>/g, '&gt;')
 		}).then(() => res.sendStatus(201)).catch(error => {
 			console.error(error);
-			return res.status(500).send({ messsage: 'Error sending verification email' });
+			return res.status(500).send({ message: 'Error sending verification email' });
 		});
 	}
 }

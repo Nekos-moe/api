@@ -67,8 +67,8 @@ class ImagesPOST {
 			if (req.body.artist) {
 				req.body.artist = req.body.artist.replace(/_/g, ' ');
 
-				if (req.body.artist.length > 40)
-					return res.status(400).send({ message: "The artist field has a maximum length of 40 characters" });
+				if (req.body.artist.length > 60)
+					return res.status(400).send({ message: "The artist field has a maximum length of 60 characters" });
 
 				if (req.body.artist.toLowerCase() === 'unknown')
 					req.body.artist = undefined;

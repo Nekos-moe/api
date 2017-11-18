@@ -32,5 +32,8 @@
 		"indent": ["error", "tab", {
 			"SwitchCase": 1
 		}]
+	},
+	"globals": {
+		"statsd": true
 	}
 }

@@ -35,8 +35,8 @@ class ImagesPATCH {
 				return res.status(400).send({ message: "Tags have a maximum length of 50 characters" });
 		}
 
-		if (req.body.artist && req.body.artist.length > 40)
-			return res.status(400).send({ message: "The artist field has a maximum length of 40 characters" });
+		if (req.body.artist && req.body.artist.length > 60)
+			return res.status(400).send({ message: "The artist field has a maximum length of 60 characters" });
 
 		let image = await this.database[req.body.pending ? 'PendingImage' : 'Image'].findOne({ id: req.params.id });
 
