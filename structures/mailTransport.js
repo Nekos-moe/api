@@ -2,15 +2,16 @@ const isDev = process.env.NODE_ENV !== 'production';
 const nodemailer = require('nodemailer'),
 	fs = require('fs'),
 	emails = {
-		welcome: fs.readFileSync(__dirname + '/../assets/welcome.html').toString()
-	},
-	transport = !isDev
-		? nodemailer.createTransport({
-			name: 'no-reply',
-			port: 25,
-			tls: { rejectUnauthorized: false }
-		})
-		: null;
+		welcome: fs.readFileSync(__dirname + '/../assets/welcome.html').toString(),
+		denied: fs.readFileSync(__dirname + '/../assets/denied.html').toString()
+	};
+let transport = !isDev
+	? nodemailer.createTransport({
+		name: 'no-reply',
+		port: 25,
+		tls: { rejectUnauthorized: false }
+	})
+	: null;
 
 let from;
 
@@ -18,7 +19,7 @@ function config(settings) {
 	from = settings.from;
 
 	if (isDev && settings.test) {
-		nodemailer.createTransport({
+		transport = nodemailer.createTransport({
 			host: 'smtp.ethereal.email',
 			port: 587,
 			secure: false,
