@@ -63,7 +63,7 @@ class RegisterPOST {
 			});
 		}
 
-		let existingUser = await this.database.User.findOne({ $or: [{ username: req.body.username }, { email: req.body.email }] });
+		const existingUser = await this.database.User.findOne({ $or: [{ username: req.body.username }, { email: req.body.email }] });
 		if (existingUser) {
 			this.rateLimiter.unlimit(req, res);
 			return res.status(409).send({ message: existingUser.username === req.body.username
@@ -72,12 +72,12 @@ class RegisterPOST {
 			});
 		}
 
-		let hashedPassword = await bcrypt.hash(req.body.password, HASH_ROUNDS),
-			token = crypto.randomBytes(32 / 2).toString('hex').slice(0, 32), // Create a token for the user
+		const hashedPassword = await bcrypt.hash(req.body.password, HASH_ROUNDS),
+			token = crypto.randomBytes(32 / 2).toString('hex'), // Create a token for the user
 			id = shortid.generate(); // User's identifier
 
 		// Create new User
-		let user = await this.database.User.create({
+		const user = await this.database.User.create({
 			token,
 			id,
 			username: req.body.username,
@@ -88,13 +88,18 @@ class RegisterPOST {
 				console.error(error);
 		});
 
+		const keyDoc = await this.database.VerifyKey.create({
+			userId: user.id,
+			key: crypto.randomBytes(16 / 2).toString('hex')
+		});
+
 		// Send verification email
 		return this.mailTransport.sendHTMLMail('welcome', {
 			to: user.email,
 			subject: 'Welcome to nekos.brussell.me!',
-			text: 'Open this link to verify your account: https://nekos.brussell.me/api/v1/register/verify/' + user.key,
+			text: 'Open this link to verify your account: https://nekos.brussell.me/api/v1/register/verify/' + keyDoc.key,
 		}, {
-			key: user.id,
+			key: keyDoc.key,
 			userId: user.id,
 			username: user.username.replace(/</g, '&lt;').replace(/>/g, '&gt;')
 		}).then(() => res.sendStatus(201)).catch(error => {

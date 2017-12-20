@@ -50,17 +50,26 @@ class ImagesPOST {
 				return res.status(403).send({ message: 'You must have a verified account to post images' });
 
 			if (req.body.tags) {
-				// Convert new tags to old format for processing
-				if (Array.isArray(req.body.tags))
-					req.body.tags = req.body.tags.join(',');
+				if (!Array.isArray(req.body.tags)) {
+					if (typeof req.body.tags !== 'string')
+						return res.status(400).send({ message: 'Tags must be a string of tags or an array of strings' });
 
-				// Remove spaces around commas. Also convert _ and - to space
-				req.body.tags = req.body.tags.replace(/( *,[ ,]*(\r?\n)*|\r\n+|\n+)/g, ',').replace(/[-_]/g, ' ').replace(/(^,|,(?:,+|$))/g, '');
+					req.body.tags = req.body.tags
+						.replace(/( *,[ ,]*(\r|\n)*|\r+|\n+)/g, '') // Remove extra spacing
+						.replace(/[-_]+/g, ' ') // Replace with spaces
+						.replace(/(^,|,(?:,+|$))/g, '') // Remove extra empty tags
+						.split(',');
+				} else {
+					req.body.tags = req.body.tags
+						.filter(t => typeof t === 'string') // Filter non-strings
+						.map(t => t.replace(/, *|[-_]+| {2,}/g, ' ')) // Replace extra spacing and remove commas
+						.filter(t => t !== '' && t.trim() !== ''); // Remove empty tags
+				}
 
-				if (req.body.tags.split(',').length > 80)
+				if (req.body.tags.length > 80)
 					return res.status(400).send({ message: "A post can only have up to 80 tags" });
 
-				if (req.body.tags.split(',').find(t => t.length > 50))
+				if (req.body.tags.find(t => t.length > 50))
 					return res.status(400).send({ message: "Tags have a maximum length of 50 characters" });
 			}
 
@@ -113,11 +122,8 @@ class ImagesPOST {
 						},
 						nsfw: !!req.body.nsfw,
 						artist: req.body.artist || undefined,
-						tags: req.body.tags ? req.body.tags.split(/ *, */) : []
+						tags: req.body.tags ? req.body.tags : []
 					});
-
-					// req.user.uploads = req.user.uploads + 1;
-					// await req.user.save();
 
 					return res.status(201).location(`/image/${filename}.jpg`).send({
 						image: {

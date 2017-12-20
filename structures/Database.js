@@ -19,6 +19,11 @@ const userSchema = new Schema({
 	createdAt: { type: Date, default: Date.now }
 });
 
+const verifyKeySchema = new Schema({
+	userId: { type: String, unique: true, index: { unique: true } },
+	key: String
+});
+
 const imageSchema = new Schema({
 	id: { type: String, unique: true, index: { unique: true } },
 	originalHash: { type: String, unique: true, index: { unique: true }, select: false },
@@ -55,6 +60,7 @@ class Database {
 			auth: { authdb: 'admin' }
 		});
 		this.User = this.db.model('User', userSchema);
+		this.VerifyKey = this.db.model('VerifyKey', verifyKeySchema);
 		this.Image = this.db.model('Image', imageSchema);
 		this.PendingImage = this.db.model('PendingImage', pendingImageSchema);
 

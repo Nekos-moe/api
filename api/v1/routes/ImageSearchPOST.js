@@ -30,9 +30,9 @@ class ImageSearchPOST {
 			});
 		}
 
-		let options = {},
+		let options = { },
 			projection = { '_id': 0, '__v': 0 },
-			sort = {};
+			sort = { };
 
 		// Add query options to the mongoose find query.
 		if (req.body.nsfw !== undefined)
