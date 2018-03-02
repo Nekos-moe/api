@@ -35,7 +35,7 @@ class RegisterVerifyPOST {
 		}
 
 		if (req.accepts('html'))
-			return res.redirect('https://nekos.brussell.me/')
+			return res.redirect('https://nekos.moe/')
 		return res.sendStatus(204);
 	}
 }
