@@ -55,7 +55,7 @@ class AccountPasswordPATCH {
 		return this.mailTransport.sendMail({
 			to: req.user.email,
 			subject: 'Your password has been changed',
-			text: `You password for nekos.brussell.me has been changed.
+			text: `You password for nekos.moe has been changed.
 Username: ${req.user.username}
 Time (UTC): ${new Date().toLocaleString({}, {timeZone: 'UTC'})}
 IP: ${req.ip}`

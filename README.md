@@ -6,5 +6,5 @@
 [Website repo](https://github.com/brussell98/catgirls-website)   
 [Trello board](https://trello.com/b/R14Gr3ae/catgirls-website)
 
-The API powering nekos.brussell.me   
+The API powering nekos.moe  
 Feel free to use this as a reference for your own projects.

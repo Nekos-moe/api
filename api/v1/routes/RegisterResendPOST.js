@@ -43,8 +43,8 @@ class RegisterVerifyPOST {
 		// Send verification email
 		return this.mailTransport.sendHTMLMail('welcome', {
 			to: user.email,
-			subject: 'Verify your nekos.brussell.me account',
-			text: 'Open this link to verify your account: https://nekos.brussell.me/api/v1/register/verify/' + keyDoc.key,
+			subject: 'Verify your nekos.moe account',
+			text: 'Open this link to verify your account: https://nekos.moe/api/v1/register/verify/' + keyDoc.key,
 		}, {
 			key: keyDoc.key,
 			userId: user.id,

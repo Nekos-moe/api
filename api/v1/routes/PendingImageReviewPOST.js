@@ -58,7 +58,7 @@ class PendingImageReviewPOST {
 
 			await this.mailTransport.sendHTMLMail('denied', {
 				to: user.email,
-				subject: 'You post to nekos.brussell.me has been denied',
+				subject: 'You post to nekos.moe has been denied',
 				text: `Your post has been denied.\n\nID: ${image.id}\nReason: ${req.body.reason}\nReviewed by: ${req.user.username}`,
 				attachments: [{
 					filename: image.id + '.jpg',
