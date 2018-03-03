@@ -16,7 +16,7 @@ class ImageRandomGET {
 	}
 
 	async run(req, res) {
-		let agg = this.database.Image.aggregate();
+		let agg = this.database.Image.aggregate().cursor({ });
 		if (req.query.nsfw !== undefined)
 			agg.match({ nsfw: req.query.nsfw == 'true' });
 
@@ -26,9 +26,21 @@ class ImageRandomGET {
 		} else
 			agg.sample(1);
 
-		let images = await agg.project('-_id -__v').exec();
+		const images = await this.handleCursor(agg.exec());
 
 		return res.status(200).send({ images });
+	}
+
+	handleCursor(cursor) {
+		let data = [];
+
+		return new Promise(resolve => {
+			cursor.on('data', d => {
+				delete d._id;
+				delete d.__v;
+				data.push(d);
+			}).once('end', () => resolve(data));
+		});
 	}
 }
 

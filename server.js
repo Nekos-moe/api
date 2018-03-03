@@ -36,7 +36,7 @@ if (process.env.NODE_ENV === 'production') {
 	app.use(datadog);
 } else {
 	global.statsd = new Proxy({ }, {
-		get: () => { () => { } }
+		get() { return function() { } }
 	});
 }
 

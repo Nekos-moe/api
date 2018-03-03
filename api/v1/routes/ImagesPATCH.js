@@ -43,7 +43,7 @@ class ImagesPATCH {
 		if (!image)
 			return res.status(404).send({ message: 'Image not found' });
 
-		if (req.user.id !== image.uploader.id && !req.user.roles || !(req.user.roles.includes('admin') || req.user.roles.includes('approver')))
+		if (req.user.id !== image.uploader.id && (!req.user.roles || !(req.user.roles.includes('admin') || req.user.roles.includes('approver'))))
 			return res.status(403).send({ message: 'You are not the uploader of this image' });
 
 		image.tags = req.body.tags.split(/ *, */) || image.tags;

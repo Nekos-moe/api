@@ -24,10 +24,10 @@ class APIv1 {
 
 		// Must load after
 		this.router.use((req, res, next) => {
-			if (!req.headers['user-agent'] || !req.route)
+			if (!req.headers['user-agent'])
 				return next();
 
-			statsd.increment('catgirls.express.useragents', 1, null, ['ua:' + req.headers['user-agent'].toLowerCase(), 'route:' + req.route.path, 'method:' + req.method]);
+			statsd.increment('catgirls.express.useragents', 1, ['ua:' + req.headers['user-agent'].replace(/,/g, ''), 'route:' + req.path.replace('/api/v1', ''), 'method:' + req.method]);
 			return next();
 		});
 	}
