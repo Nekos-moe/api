@@ -6,7 +6,7 @@ Mongoose.Promise = global.Promise;
 const userSchema = new Schema({
 	id: { type: String, unique: true, index: { unique: true } },
 	email: { type: String, maxlength: 70, trim: true, select: false },
-	password: { type: String, maxlength: 70, select: false },
+	password: { type: String, select: false },
 	username: { type: String, maxlength: 35, trim: true, unique: true, index: { unique: true } },
 	token: { type: String, select: false, unique: true, index: { unique: true } },
 	verified: { type: Boolean, default: false },
@@ -17,6 +17,11 @@ const userSchema = new Schema({
 	likesReceived: { type: Number, default: 0 },
 	favoritesReceived: { type: Number, default: 0 },
 	createdAt: { type: Date, default: Date.now }
+});
+
+const verifyKeySchema = new Schema({
+	userId: { type: String, unique: true, index: { unique: true } },
+	key: String
 });
 
 const imageSchema = new Schema({
@@ -49,17 +54,19 @@ const pendingImageSchema = new Schema({
 class Database {
 	constructor(settings) {
 		this.db = Mongoose.createConnection(`mongodb://localhost:${settings.port}/${settings.db}`, {
-			useMongoClient: true,
 			user: settings.user,
 			pass: settings.pass,
 			auth: { authdb: 'admin' }
 		});
 		this.User = this.db.model('User', userSchema);
+		this.VerifyKey = this.db.model('VerifyKey', verifyKeySchema);
 		this.Image = this.db.model('Image', imageSchema);
 		this.PendingImage = this.db.model('PendingImage', pendingImageSchema);
 
 		this.db.on('error', console.error.bind(console, 'Mongoose error:'));
-		this.db.on('open', () => console.log('Mongoose Connected'));
+		this.db.on('open', async () => {
+			console.log('Mongoose Connected');
+		});
 	}
 }
 

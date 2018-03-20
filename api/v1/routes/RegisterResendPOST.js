@@ -1,4 +1,5 @@
 const RateLimiter = require('../../../structures/RateLimiter');
+const crypto = require('crypto');
 
 class RegisterVerifyPOST {
 	constructor(controller) {
@@ -26,18 +27,31 @@ class RegisterVerifyPOST {
 
 		// No matching account found
 		if (!user || user.verified)
-			return res.status(409).send({ message: 'This account has already been verified' });
+			return res.status(409).send({ message: 'This account has either already been verified or was deleted.' });
+
+		// Get key doc
+		let keyDoc = await this.database.VerifyKey.findOne({ userId: user.id });
+		const newKey = crypto.randomBytes(16 / 2).toString('hex')
+
+		if (!keyDoc)
+			keyDoc = await this.database.VerifyKey.create({ userId: user.id, key: newKey });
+		else {
+			keyDoc.key = newKey;
+			await keyDoc.save();
+		}
 
 		// Send verification email
-		return this.mailTransport.sendHTMLMail('verify', {
+		return this.mailTransport.sendHTMLMail('welcome', {
 			to: user.email,
-			subject: 'Verify your nekos.brussell.me account',
-			text: 'Open this link to verify your account: https://nekos.brussell.me/api/v1/register/verify/' + user.key,
+			subject: 'Verify your nekos.moe account',
+			text: 'Open this link to verify your account: https://nekos.moe/api/v1/register/verify/' + keyDoc.key,
 		}, {
-			key: user.id
+			key: keyDoc.key,
+			userId: user.id,
+			username: user.username.replace(/</g, '&lt;').replace(/>/g, '&gt;')
 		}).then(() => res.sendStatus(201)).catch(error => {
 			console.error(error);
-			return res.status(500).send({ messsage: 'Error sending verification email' });
+			return res.status(500).send({ message: 'Error sending verification email' });
 		});
 	}
 }

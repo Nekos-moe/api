@@ -30,9 +30,9 @@ class ImageSearchPOST {
 			});
 		}
 
-		let options = {},
+		let options = { },
 			projection = { '_id': 0, '__v': 0 },
-			sort = {};
+			sort = { };
 
 		// Add query options to the mongoose find query.
 		if (req.body.nsfw !== undefined)
@@ -52,19 +52,19 @@ class ImageSearchPOST {
 			// This allows users to search by using either name.
 			options.artist = new RegExp(`(?:\\(|^)${escapeRegExp(req.body.artist)} *(?:\\)|$|\\(|)`, 'i');
 		}
-		if (req.body.tags !== undefined && req.body.tags !== '') {
+		
+		if (Array.isArray(req.body.tags))
+			req.body.tags = req.body.tags.join(', ');
+
+		if (req.body.tags !== undefined && req.body.tags.trim() !== '') {
 			/* What we are doing here is bypassing a mongodb $text restriction.
 			 * If you only include negate expressions then nothing will match so
 			 * we turn it into a $not regex that matches negated tags and returns
 			 * the rest. This is needed for tag blacklists.
 			*/
-			if (req.body.tags.split(/-"[^"]+"/).join('').trim() === '') {
+			if (req.body.tags.split(/-"?[^",]+"?(?:, *)?/).join('').trim() === '') {
 				options.tags = {
-					$not: new RegExp(
-						"(,|^)(" +
-						req.body.tags.split(/" -"/).join('|').substring(2).slice(0, -1) +
-						")(,|$)"
-					)
+					$nin: req.body.tags.match(/(^|, *)-[^,]+/g).map(e => e.replace(/,? *-|"/g, ''))
 				};
 			} else {
 				options.$text = { $search: req.body.tags };

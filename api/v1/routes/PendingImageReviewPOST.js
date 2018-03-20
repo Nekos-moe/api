@@ -7,6 +7,7 @@ class PendingImageReviewPOST {
 		this.router = controller.router;
 		this.database = controller.database;
 		this.authorize = controller.authorize;
+		this.mailTransport = controller.mailTransport;
 
 		this.rateLimiter = new RateLimiter({ max: 10 }); // 10/10 limit
 
@@ -22,12 +23,12 @@ class PendingImageReviewPOST {
 		if (!req.user.roles || !req.user.roles.includes('admin') && !req.user.roles.includes('approver'))
 			return res.status(403).send({ message: "You do not have permission to approve posts" });
 
-		let image = await this.database.PendingImage.find({ id: req.params.id }).select('-_id -__v').exec();
+		let image = await this.database.PendingImage.findOne({ id: req.params.id }).select('+originalHash');
 
 		if (!image)
 			return res.status(404).send({ message: 'Image not found' });
 
-		let user = await this.database.User.findOne({ id: image.uploader.id }).select('-_id -__v -email -password -token')
+		let user = await this.database.User.findOne({ id: image.uploader.id }).select('+email');
 
 		if (req.body.action === 'approve') {
 			await this.database.Image.create({
@@ -41,7 +42,8 @@ class PendingImageReviewPOST {
 				nsfw: image.nsfw,
 				artist: image.artist,
 				tags: image.tags,
-				comments: []
+				comments: [],
+				createdAt: image.createdAt
 			});
 
 			user.uploads++;
@@ -51,6 +53,26 @@ class PendingImageReviewPOST {
 
 			return res.status(200).send({ message: 'Post approved' });
 		} else if (req.body.action === 'deny') {
+			if (!req.body.reason)
+				return res.status(404).send({ message: 'Reason required to deny a post' });
+
+			await this.mailTransport.sendHTMLMail('denied', {
+				to: user.email,
+				subject: 'You post to nekos.moe has been denied',
+				text: `Your post has been denied.\n\nID: ${image.id}\nReason: ${req.body.reason}\nReviewed by: ${req.user.username}`,
+				attachments: [{
+					filename: image.id + '.jpg',
+					content: fs.createReadStream(`${__dirname}/../../../image/${image.id}.jpg`),
+					cid: image.originalHash
+				}]
+			}, {
+				cid: image.originalHash,
+				reason: req.body.reason.replace(/\n/g, '<br>'),
+				reviewer: req.user.username,
+				id: image.id,
+				username: user.username
+			});
+
 			fs.unlinkSync(`${__dirname}/../../../image/${image.id}.jpg`);
 			fs.unlinkSync(`${__dirname}/../../../thumbnail/${image.id}.jpg`);
 

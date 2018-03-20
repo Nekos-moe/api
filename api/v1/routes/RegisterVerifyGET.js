@@ -8,26 +8,34 @@ class RegisterVerifyPOST {
 	}
 
 	async run(req, res) {
+		// Get key doc
+		const key = await this.database.VerifyKey.findOne({ key: req.params.key });
+
+		// Invalid key
+		if (!key)
+			return res.status(409).send({ message: 'Invalid key' });
+
 		// Find the user being verified
-		let user = await this.database.User.findOne({ id: req.params.key }).select('+email');
+		const user = await this.database.User.findOne({ id: key.userId });
 
 		// No matching account found
 		if (!user || user.verified)
 			return res.status(409).send({
-				message: 'Invalid key. Either the account has already been validated or the key was misspelled'
+				message: 'User is either already verified or the account has been deleted.'
 			});
 
-		// Mark user as verified and save user. Then delete the unverified user doc
+		// Mark user as verified and save user. Then delete the key doc
 		user.verified = true;
 		try {
+			await key.remove();
 			await user.save();
-		} catch (e) {
-			console.error(e.toString());
+		} catch (error) {
+			console.error(error.toString());
 			return res.status(500).send({ message: 'Error updating database' });
 		}
 
 		if (req.accepts('html'))
-			return res.redirect('https://nekos.brussell.me/')
+			return res.redirect('https://nekos.moe/')
 		return res.sendStatus(204);
 	}
 }

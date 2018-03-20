@@ -19,7 +19,7 @@ class AuthPOST {
 	async run(req, res) {
 		if (!req.body || !req.body.username || !req.body.password) {
 			this.rateLimiter.unlimit(req, res);
-			return res.status(400).send({ message: "Username, and password are required" });
+			return res.status(400).send({ message: "Username and password are required" });
 		}
 
 		let user = await this.database.User.findOne({ username: req.body.username }).select('+password +token -_id -__v');

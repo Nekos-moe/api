@@ -1,18 +1,34 @@
+const isDev = process.env.NODE_ENV !== 'production';
 const nodemailer = require('nodemailer'),
 	fs = require('fs'),
 	emails = {
-		verify: fs.readFileSync(__dirname + '/../assets/verify.html').toString()
-	},
-	transport = process.env.NODE_ENV === 'production' ? nodemailer.createTransport({
+		welcome: fs.readFileSync(__dirname + '/../assets/welcome.html').toString(),
+		denied: fs.readFileSync(__dirname + '/../assets/denied.html').toString()
+	};
+let transport = !isDev
+	? nodemailer.createTransport({
 		name: 'no-reply',
 		port: 25,
 		tls: { rejectUnauthorized: false }
-	}) : null;
+	})
+	: null;
 
-var from;
+let from;
 
 function config(settings) {
-	from = settings.from
+	from = settings.from;
+
+	if (isDev && settings.test) {
+		transport = nodemailer.createTransport({
+			host: 'smtp.ethereal.email',
+			port: 587,
+			secure: false,
+			auth: {
+				user: settings.test.user,
+				pass: settings.test.pass
+			}
+		});
+	}
 }
 
 function sendMail(options) {
@@ -22,6 +38,10 @@ function sendMail(options) {
 		return transport.sendMail(options, (error, info) => {
 			if (error)
 				return reject(error);
+
+			if (isDev)
+				console.log('Email sent, view at: ', nodemailer.getTestMessageUrl(info));
+
 			return resolve(info);
 		});
 	});
@@ -35,13 +55,13 @@ function sendHTMLMail(template, options, values) {
 		return transport.sendMail(options, (error, info) => {
 			if (error)
 				return reject(error);
+
+			if (isDev)
+				console.log('Email sent, view at: ', nodemailer.getTestMessageUrl(info));
+
 			return resolve(info);
 		});
 	});
 }
 
-module.exports = process.env.NODE_ENV === 'production' ? { config, sendMail, sendHTMLMail } : {
-	config,
-	sendMail() { return Promise.resolve(); },
-	sendHTMLMail() { return Promise.resolve(); }
-};
+module.exports = { config, sendMail, sendHTMLMail };

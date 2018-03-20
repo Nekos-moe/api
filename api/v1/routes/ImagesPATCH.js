@@ -22,6 +22,10 @@ class ImagesPATCH {
 			return res.status(400).send({ message: "No body" });
 
 		if (req.body.tags) {
+			// Convert new tags to old format for processing
+			if (Array.isArray(req.body.tags))
+				req.body.tags = req.body.tags.join(',');
+
 			req.body.tags = req.body.tags.replace(/( *,[ ,]*(\r?\n)*|\r\n+|\n+)/g, ',').replace(/[-_]/g, ' ').replace(/(^,|,(?:,+|$))/g, '');
 
 			if (req.body.tags.split(',').length > 80)
@@ -31,18 +35,18 @@ class ImagesPATCH {
 				return res.status(400).send({ message: "Tags have a maximum length of 50 characters" });
 		}
 
-		if (req.body.artist && req.body.artist.length > 40)
-			return res.status(400).send({ message: "The artist field has a maximum length of 40 characters" });
+		if (req.body.artist && req.body.artist.length > 60)
+			return res.status(400).send({ message: "The artist field has a maximum length of 60 characters" });
 
 		let image = await this.database[req.body.pending ? 'PendingImage' : 'Image'].findOne({ id: req.params.id });
 
 		if (!image)
 			return res.status(404).send({ message: 'Image not found' });
 
-		if (req.user.id !== image.uploader.id && !req.user.roles || !(req.user.roles.includes('admin') || req.user.roles.includes('approver')))
+		if (req.user.id !== image.uploader.id && (!req.user.roles || !(req.user.roles.includes('admin') || req.user.roles.includes('approver'))))
 			return res.status(403).send({ message: 'You are not the uploader of this image' });
 
-		image.tags = req.body.tags || image.tags;
+		image.tags = req.body.tags.split(/ *, */) || image.tags;
 		image.artist = req.body.artist !== undefined ? req.body.artist.replace(/_/g, ' ') || undefined : image.artist;
 		image.nsfw = !!(req.body.nsfw === undefined ? image.nsfw : req.body.nsfw);
 		await image.save();

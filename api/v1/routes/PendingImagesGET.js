@@ -21,8 +21,8 @@ class PendingImagesGET {
 		if ((!req.user.roles || !req.user.roles.includes('admin') && !req.user.roles.includes('approver')) && req.user.id !== req.query.user)
 			return res.status(403).send({ message: "You do not have permission to see other user's pending posts" });
 
-		let query = req.query.user ? { uploader: { id: req.query.user } } : {},
-			images = await this.database.PendingImage.find(query).select('-_id -__v').lean().exec();
+		const query = req.query.user ? { ['uploader.id']: req.query.user } : { };
+		const images = await this.database.PendingImage.find(query).select('-_id -__v').lean().exec();
 
 		return res.status(200).send({ images });
 	}
