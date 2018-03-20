@@ -52,7 +52,11 @@ class ImageSearchPOST {
 			// This allows users to search by using either name.
 			options.artist = new RegExp(`(?:\\(|^)${escapeRegExp(req.body.artist)} *(?:\\)|$|\\(|)`, 'i');
 		}
-		if (req.body.tags !== undefined && req.body.tags !== '') {
+		
+		if (Array.isArray(req.body.tags))
+			req.body.tags = req.body.tags.join(', ');
+
+		if (req.body.tags !== undefined && req.body.tags.trim() !== '') {
 			/* What we are doing here is bypassing a mongodb $text restriction.
 			 * If you only include negate expressions then nothing will match so
 			 * we turn it into a $not regex that matches negated tags and returns

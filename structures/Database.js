@@ -6,7 +6,7 @@ Mongoose.Promise = global.Promise;
 const userSchema = new Schema({
 	id: { type: String, unique: true, index: { unique: true } },
 	email: { type: String, maxlength: 70, trim: true, select: false },
-	password: { type: String, maxlength: 70, select: false },
+	password: { type: String, select: false },
 	username: { type: String, maxlength: 35, trim: true, unique: true, index: { unique: true } },
 	token: { type: String, select: false, unique: true, index: { unique: true } },
 	verified: { type: Boolean, default: false },

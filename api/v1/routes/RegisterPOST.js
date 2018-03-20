@@ -76,36 +76,38 @@ class RegisterPOST {
 			token = crypto.randomBytes(32 / 2).toString('hex'), // Create a token for the user
 			id = shortid.generate(); // User's identifier
 
-		// Create new User
-		const user = await this.database.User.create({
-			token,
-			id,
-			username: req.body.username,
-			email: req.body.email,
-			password: hashedPassword
-		}, error => {
-			if (error)
+		try {
+			// Create new User
+			const user = await this.database.User.create({
+				token,
+				id,
+				username: req.body.username,
+				email: req.body.email,
+				password: hashedPassword
+			});
+
+			const keyDoc = await this.database.VerifyKey.create({
+				userId: user.id,
+				key: crypto.randomBytes(16 / 2).toString('hex')
+			});
+
+			// Send verification email
+			return this.mailTransport.sendHTMLMail('welcome', {
+				to: user.email,
+				subject: 'Welcome to nekos.moe!',
+				text: 'Open this link to verify your account: https://nekos.moe/api/v1/register/verify/' + keyDoc.key,
+			}, {
+				key: keyDoc.key,
+				userId: user.id,
+				username: user.username.replace(/</g, '&lt;').replace(/>/g, '&gt;')
+			}).then(() => res.sendStatus(201)).catch(error => {
 				console.error(error);
-		});
-
-		const keyDoc = await this.database.VerifyKey.create({
-			userId: user.id,
-			key: crypto.randomBytes(16 / 2).toString('hex')
-		});
-
-		// Send verification email
-		return this.mailTransport.sendHTMLMail('welcome', {
-			to: user.email,
-			subject: 'Welcome to nekos.moe!',
-			text: 'Open this link to verify your account: https://nekos.moe/api/v1/register/verify/' + keyDoc.key,
-		}, {
-			key: keyDoc.key,
-			userId: user.id,
-			username: user.username.replace(/</g, '&lt;').replace(/>/g, '&gt;')
-		}).then(() => res.sendStatus(201)).catch(error => {
+				return res.status(500).send({ message: 'Error sending verification email' });
+			});
+		} catch (error) {
 			console.error(error);
-			return res.status(500).send({ message: 'Error sending verification email' });
-		});
+			return res.status(500).send({ message: 'Internal server error' });
+		}
 	}
 }
 
