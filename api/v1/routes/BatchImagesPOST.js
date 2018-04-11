@@ -18,7 +18,7 @@ class BatchImagesGET {
 	async run(req, res) {
 		let images = await this.database.Image.find({ id: { $in: req.body.ids } }).select('-_id -__v').lean();
 
-		return res.status(200).send({ images });
+		return res.status(200).send({ images: images.sort((a, b) => req.body.ids.indexOf(a.id) - req.body.ids.indexOf(b.id)) });
 	}
 }
 

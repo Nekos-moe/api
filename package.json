@@ -1,6 +1,6 @@
 {
 	"name": "catgirls-api",
-	"version": "0.25.2",
+	"version": "0.26.0",
 	"description": "An API for neko lovers.",
 	"private": true,
 	"main": "server.js",
@@ -10,7 +10,7 @@
 		"dev": "cross-env NODE_ENV=development node server.js"
 	},
 	"dependencies": {
-		"bcrypt": "^1.0.2",
+		"bcrypt": "^1.0.3",
 		"body-parser": "^1.18.2",
 		"connect-datadog": "^0.0.6",
 		"cross-env": "*",
@@ -22,7 +22,7 @@
 		"node-dogstatsd": "^0.0.6",
 		"nodemailer": "4.6.0",
 		"raven": "^2.4.2",
-		"sharp": "^0.19.1",
+		"sharp": "^0.20.1",
 		"shortid": "^2.2.6",
 		"toml": "^2.3.1"
 	},

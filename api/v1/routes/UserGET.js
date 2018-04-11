@@ -30,7 +30,7 @@ class UserGET {
 			return res.status(200).send({ user: userMe });
 		}
 
-		const user = await this.database.User.findOne({ id: req.params.id, verified: true }).select('-_id -__v -password -token -email').lean();
+		const user = await this.database.User.findOne({ id: req.params.id, verified: true }).select('-_id -__v -password -token -email -savedTags').lean();
 
 		if (!user)
 			return res.status(404).send({ message: "No user with that id" });
