@@ -52,7 +52,7 @@ class ImageSearchPOST {
 			// This allows users to search by using either name.
 			options.artist = new RegExp(`(?:\\(|^)${escapeRegExp(req.body.artist)} *(?:\\)|$|\\(|)`, 'i');
 		}
-		
+
 		if (Array.isArray(req.body.tags))
 			req.body.tags = req.body.tags.join(', ');
 

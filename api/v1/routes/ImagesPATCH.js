@@ -26,13 +26,20 @@ class ImagesPATCH {
 			if (Array.isArray(req.body.tags))
 				req.body.tags = req.body.tags.join(',');
 
-			req.body.tags = req.body.tags.replace(/( *,[ ,]*(\r?\n)*|\r\n+|\n+)/g, ',').replace(/[-_]/g, ' ').replace(/(^,|,(?:,+|$))/g, '');
+			req.body.tags = req.body.tags.replace(/( *,[ ,]*(\r?\n)*|\r\n+|\n+)/g, ',')
+				.replace(/[-_]/g, ' ')
+				.replace(/(^,|,(?:,+|$))/g, '');
 
-			if (req.body.tags.split(',').length > 80)
+			req.body.tags = req.body.tags.split(',');
+
+			if (req.body.tags.length > 80)
 				return res.status(400).send({ message: "A post can only have up to 80 tags" });
 
-			if (req.body.tags.split(',').find(t => t.length > 50))
+			if (req.body.tags.find(t => t.length > 50))
 				return res.status(400).send({ message: "Tags have a maximum length of 50 characters" });
+
+			// Remove duplicates and sort alphabetically
+			req.body.tags = [...new Set(req.body.tags)].sort((a, b) => a.localeCompare(b));
 		}
 
 		if (req.body.artist && req.body.artist.length > 60)

@@ -11,6 +11,7 @@ const userSchema = new Schema({
 	token: { type: String, select: false, unique: true, index: { unique: true } },
 	verified: { type: Boolean, default: false },
 	roles: [{ type: String, enum: ['admin', 'approver', 'reviewReports', 'editPosts'] }],
+	savedTags: [String],
 	uploads: { type: Number, default: 0 },
 	likes: [String],
 	favorites: [String],

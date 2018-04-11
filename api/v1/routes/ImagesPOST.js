@@ -71,6 +71,9 @@ class ImagesPOST {
 
 				if (req.body.tags.find(t => t.length > 50))
 					return res.status(400).send({ message: "Tags have a maximum length of 50 characters" });
+
+				// Remove duplicates and sort alphabetically
+				req.body.tags = [...new Set(req.body.tags)].sort((a, b) => a.localeCompare(b));
 			}
 
 			if (req.body.artist) {
