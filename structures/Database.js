@@ -32,7 +32,7 @@ const imageSchema = new Schema({
 	uploader: { type: Object, required: true },
 	approver: { type: Object },
 	nsfw: { type: Boolean, default: false },
-	tags: [{ type: String, index: "text" }],
+	tags: [String],
 	artist: String,
 	likes: { type: Number, default: 0 },
 	favorites: { type: Number, default: 0 },
@@ -48,9 +48,12 @@ const pendingImageSchema = new Schema({
 	createdAt: { type: Date, default: Date.now },
 	uploader: { type: Object, required: true },
 	nsfw: { type: Boolean, default: false },
-	tags: [{ type: String, index: "text" }],
+	tags: [String],
 	artist: String
 });
+
+imageSchema.index({ tags: 'text' }, { default_language: 'none' });
+pendingImageSchema.index({ tags: 'text' }, { default_language: 'none' });
 
 class Database {
 	constructor(settings) {

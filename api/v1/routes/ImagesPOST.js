@@ -56,13 +56,13 @@ class ImagesPOST {
 
 					req.body.tags = req.body.tags
 						.replace(/( *,[ ,]*(\r|\n)*|\r+|\n+)/g, '') // Remove extra spacing
-						.replace(/[-_]+/g, ' ') // Replace with spaces
+						.replace(/_+/g, ' ') // Replace with spaces
 						.replace(/(^,|,(?:,+|$))/g, '') // Remove extra empty tags
 						.split(',');
 				} else {
 					req.body.tags = req.body.tags
 						.filter(t => typeof t === 'string') // Filter non-strings
-						.map(t => t.replace(/, *|[-_]+| {2,}/g, ' ')) // Replace extra spacing and remove commas
+						.map(t => t.replace(/, *|_+| {2,}/g, ' ')) // Replace extra spacing and remove commas
 						.filter(t => t !== '' && t.trim() !== ''); // Remove empty tags
 				}
 

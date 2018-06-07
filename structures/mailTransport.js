@@ -33,7 +33,7 @@ function config(settings) {
 
 function sendMail(options) {
 	return new Promise((resolve, reject) => {
-		options.from = options.from || `"Catgirls" <${from}>`;
+		options.from = options.from || `"Nekos.moe" <${from}>`;
 
 		return transport.sendMail(options, (error, info) => {
 			if (error)
@@ -49,7 +49,7 @@ function sendMail(options) {
 
 function sendHTMLMail(template, options, values) {
 	return new Promise((resolve, reject) => {
-		options.from = options.from || `"Catgirls" <${from}>`;
+		options.from = options.from || `"Nekos.moe" <${from}>`;
 		options.html = emails[template].replace(/{{(\w+?)}}/g, (match, key) => values[key]);
 
 		return transport.sendMail(options, (error, info) => {
