@@ -68,11 +68,14 @@ class ImageSearchPOST {
 				};
 			} else {
 				options.$text = { $search: req.body.tags };
-				projection.score = { $meta: 'textScore' };
-				sort.score = { $meta: 'textScore' };
+
+				if (req.body.sort && req.body.sort === 'relevance') {
+					projection.score = { $meta: 'textScore' };
+					sort.score = { $meta: 'textScore' };
+				}
 			}
 		}
-		if (req.body.sort) {
+		if (req.body.sort && req.body.sort !== 'relevance') {
 			if (req.body.sort === 'oldest')
 				sort._id = 1;
 			else if (req.body.sort === 'likes') {

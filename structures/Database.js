@@ -52,6 +52,15 @@ const pendingImageSchema = new Schema({
 	artist: String
 });
 
+const postSuggestionSchema = new Schema({
+	postId: { type: String, required: true },
+	user: { type: Object, required: true },
+	nsfw: Boolean,
+	artist: String,
+	tagsAdd: [String],
+	tagsRemove: [String]
+});
+
 imageSchema.index({ tags: 'text' }, { default_language: 'none' });
 pendingImageSchema.index({ tags: 'text' }, { default_language: 'none' });
 
@@ -60,12 +69,14 @@ class Database {
 		this.db = Mongoose.createConnection(`mongodb://localhost:${settings.port}/${settings.db}`, {
 			user: settings.user,
 			pass: settings.pass,
-			auth: { authdb: 'admin' }
+			auth: { authdb: 'admin' },
+			useNewUrlParser: true
 		});
 		this.User = this.db.model('User', userSchema);
 		this.VerifyKey = this.db.model('VerifyKey', verifyKeySchema);
 		this.Image = this.db.model('Image', imageSchema);
 		this.PendingImage = this.db.model('PendingImage', pendingImageSchema);
+		this.PostSuggestion = this.db.model('PostSuggestion', postSuggestionSchema);
 
 		this.db.on('error', console.error.bind(console, 'Mongoose error:'));
 		this.db.on('open', async () => {

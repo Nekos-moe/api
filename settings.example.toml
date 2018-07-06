@@ -8,6 +8,9 @@ port = 8080
 	from = 'n@y.a.a'
 [raven]
 	url = 'https://111111@sentry.io/111111'
+[webhooks]
+	[webhooks.discord]
+		onUpload = 'https://discordapp.com/api/webhooks/433970782389812325/T0k3n_IsH3rE'
 [apiSettings]
 	[apiSettings.v1]
 		allowAccountCreation = true

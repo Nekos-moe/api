@@ -7,10 +7,12 @@ const express = require('express'),
 	settings = toml.parse(fs.readFileSync('./settings.toml')),
 	Database = require('./structures/Database'),
 	mailTransport = require('./structures/mailTransport'),
+	webhookTransport = require('./structures/webhookTransport'),
 	db = new Database(settings.mongo),
 	raven = require('raven');
 
 mailTransport.config({ from: settings.email.from, test: settings.email.test });
+webhookTransport.config(settings.webhooks);
 
 if (process.env.NODE_ENV === 'production') {
 	raven.disableConsoleAlerts();
@@ -66,7 +68,7 @@ app.use((req, res, next) => {
 });
 
 // Load in the routes for express
-let apiv1 = new (require('./api/v1/Router.js'))(settings, db, mailTransport);
+let apiv1 = new (require('./api/v1/Router.js'))(settings, db, mailTransport, webhookTransport);
 app.use(apiv1.path, apiv1.router);
 
 // Start the express server

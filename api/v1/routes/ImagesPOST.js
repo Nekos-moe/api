@@ -19,6 +19,7 @@ class ImagesPOST {
 		this.router = controller.router;
 		this.database = controller.database;
 		this.authorize = controller.authorize;
+		this.webhookTransport = controller.webhookTransport;
 
 		this.allowImageUploads = settings.allowImageUploads;
 		this.imageSaveQuality = settings.imageSaveQuality;
@@ -58,11 +59,12 @@ class ImagesPOST {
 						.replace(/( *,[ ,]*(\r|\n)*|\r+|\n+)/g, '') // Remove extra spacing
 						.replace(/_+/g, ' ') // Replace with spaces
 						.replace(/(^,|,(?:,+|$))/g, '') // Remove extra empty tags
+						.toLowerCase()
 						.split(',');
 				} else {
 					req.body.tags = req.body.tags
 						.filter(t => typeof t === 'string') // Filter non-strings
-						.map(t => t.replace(/, *|_+| {2,}/g, ' ')) // Replace extra spacing and remove commas
+						.map(t => t.replace(/, *|_+| {2,}/g, ' ').toLowerCase()) // Replace extra spacing and remove commas
 						.filter(t => t !== '' && t.trim() !== ''); // Remove empty tags
 				}
 
@@ -126,6 +128,30 @@ class ImagesPOST {
 						nsfw: !!req.body.nsfw,
 						artist: req.body.artist || undefined,
 						tags: req.body.tags ? req.body.tags : []
+					});
+
+					this.webhookTransport.executeDiscordWebhook('onUpload', {
+						embeds: [{
+							title: 'New Post Pending Approval',
+							url: 'https://nekos.moe/post/' + image.id,
+							color: 9874412,
+							timestamp: new Date().toISOString(),
+							image: {
+								url: 'https://nekos.moe/image/' + image.id,
+							},
+							fields: [{
+								name: 'Uploader',
+								value: image.uploader.username,
+								inline: true
+							}, {
+								name: 'Artist',
+								value: image.artist || 'Unknown',
+								inline: true
+							}, {
+								name: 'Tags',
+								value: image.tags.join(', ')
+							}]
+						}]
 					});
 
 					return res.status(201).location(`/image/${filename}.jpg`).send({

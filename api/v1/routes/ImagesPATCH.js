@@ -28,7 +28,8 @@ class ImagesPATCH {
 
 			req.body.tags = req.body.tags.replace(/( *,[ ,]*(\r?\n)*|\r\n+|\n+)/g, ',')
 				.replace(/_+/g, ' ')
-				.replace(/(^,|,(?:,+|$))/g, '');
+				.replace(/(^,|,(?:,+|$))/g, '')
+				.toLowerCase();
 
 			req.body.tags = req.body.tags.split(',');
 
