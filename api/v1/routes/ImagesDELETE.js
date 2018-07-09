@@ -49,6 +49,8 @@ class ImagesDELETE {
 			}
 
 			await uploader.save();
+
+			await this.database.PostSuggestion.deleteMany({ postId: image.id });
 		}
 
 		return res.sendStatus(204);

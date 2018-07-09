@@ -7,7 +7,7 @@ class PendingImagesGET {
 		this.database = controller.database;
 		this.authorize = controller.authorize;
 
-		this.rateLimiter = new RateLimiter({ max: 10 }); // 10/10 limit
+		this.rateLimiter = new RateLimiter({ max: 5 }); // 5/10 limit
 
 		this.router.get(
 			this.path,

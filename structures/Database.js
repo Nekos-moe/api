@@ -4,7 +4,7 @@ const Mongoose = require('mongoose'),
 Mongoose.Promise = global.Promise;
 
 const userSchema = new Schema({
-	id: { type: String, unique: true, index: { unique: true } },
+	id: { type: String, unique: true, index: { unique: true }, required: true },
 	email: { type: String, maxlength: 70, trim: true, select: false },
 	password: { type: String, select: false },
 	username: { type: String, maxlength: 35, trim: true, unique: true, index: { unique: true } },
@@ -21,12 +21,12 @@ const userSchema = new Schema({
 });
 
 const verifyKeySchema = new Schema({
-	userId: { type: String, unique: true, index: { unique: true } },
+	userId: { type: String, unique: true, index: { unique: true }, required: true },
 	key: String
 });
 
 const imageSchema = new Schema({
-	id: { type: String, unique: true, index: { unique: true } },
+	id: { type: String, unique: true, index: { unique: true }, required: true },
 	originalHash: { type: String, unique: true, index: { unique: true }, select: false },
 	createdAt: { type: Date, default: Date.now },
 	uploader: { type: Object, required: true },
@@ -43,7 +43,7 @@ const imageSchema = new Schema({
 });
 
 const pendingImageSchema = new Schema({
-	id: { type: String, unique: true, index: { unique: true } },
+	id: { type: String, unique: true, index: { unique: true }, required: true },
 	originalHash: { type: String, select: false },
 	createdAt: { type: Date, default: Date.now },
 	uploader: { type: Object, required: true },
@@ -53,6 +53,7 @@ const pendingImageSchema = new Schema({
 });
 
 const postSuggestionSchema = new Schema({
+	id: { type: String, unique: true, index: { unique: true }, required: true },
 	postId: { type: String, required: true },
 	user: { type: Object, required: true },
 	nsfw: Boolean,
