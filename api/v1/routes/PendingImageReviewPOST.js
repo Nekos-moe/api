@@ -21,7 +21,7 @@ class PendingImageReviewPOST {
 
 	async run(req, res) {
 		if (!req.user.roles || !req.user.roles.includes('admin') && !req.user.roles.includes('approver'))
-			return res.status(403).send({ message: "You do not have permission to approve posts" });
+			return res.status(403).send({ message: "You do not have permission to review posts" });
 
 		let image = await this.database.PendingImage.findOne({ id: req.params.id }).select('+originalHash');
 
@@ -54,7 +54,7 @@ class PendingImageReviewPOST {
 			return res.status(200).send({ message: 'Post approved' });
 		} else if (req.body.action === 'deny') {
 			if (!req.body.reason)
-				return res.status(404).send({ message: 'Reason required to deny a post' });
+				return res.status(400).send({ message: 'Reason required to deny a post' });
 
 			await this.mailTransport.sendHTMLMail('denied', {
 				to: user.email,

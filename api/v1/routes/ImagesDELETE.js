@@ -40,15 +40,17 @@ class ImagesDELETE {
 
 			if (image.likes > 0) {
 				await this.database.User.updateMany({ likes: { $in: [image.id] } }, { $pull: { likes: image.id } });
-				uploader.likesReceived--;
+				uploader.likesReceived -= image.likes;
 			}
 
 			if (image.favorites > 0) {
 				await this.database.User.updateMany({ favorites: { $in: [image.id] } }, { $pull: { favorites: image.id } });
-				uploader.favoritesReceived--;
+				uploader.favoritesReceived -= image.favorites;
 			}
 
 			await uploader.save();
+
+			await this.database.PostSuggestion.deleteMany({ postId: image.id });
 		}
 
 		return res.sendStatus(204);

@@ -1,9 +1,10 @@
 const fs = require('fs');
 
 class APIv1 {
-	constructor(settings, database, mailTransport) {
+	constructor(settings, database, mailTransport, webhookTransport) {
 		this.database = database;
 		this.mailTransport = mailTransport;
+		this.webhookTransport = webhookTransport;
 		this.router = require('express').Router();
 		this.routes = { };
 		this.path = '/api/v1';
