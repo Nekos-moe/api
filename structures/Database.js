@@ -28,7 +28,7 @@ const verifyKeySchema = new Schema({
 const imageSchema = new Schema({
 	id: { type: String, unique: true, index: { unique: true }, required: true },
 	originalHash: { type: String, unique: true, index: { unique: true }, select: false },
-	createdAt: { type: Date, default: Date.now },
+	createdAt: { type: Date, default: Date.now, required: true },
 	uploader: { type: Object, required: true },
 	approver: { type: Object },
 	nsfw: { type: Boolean, default: false },

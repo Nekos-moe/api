@@ -57,12 +57,12 @@ class ImageRecommendationsPOST {
 
 		if (req.body.sort) {
 			if (req.body.sort === 'oldest')
-				sort._id = 1;
+				sort.createdAt = 1;
 			else if (req.body.sort === 'likes') {
 				sort.likes = -1;
-				sort._id = -1;
+				sort.createdAt = -1;
 			} else
-				sort._id = -1;
+				sort.createdAt = -1;
 		}
 
 		const query = this.database.Image.find(options).sort(sort);

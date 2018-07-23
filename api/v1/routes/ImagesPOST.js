@@ -163,8 +163,8 @@ class ImagesPOST {
 							artist: image.artist,
 							nsfw: image.nsfw
 						},
-						image_url: `https://nekos.brussell.me/image/${filename}.jpg`,
-						post_url: `https://nekos.brussell.me/post/${filename}`
+						image_url: `https://nekos.moe/image/${filename}.jpg`,
+						post_url: `https://nekos.moe/post/${filename}`
 					});
 				}).catch(error => {
 					console.error(error);

@@ -80,12 +80,12 @@ class ImageSearchPOST {
 
 		if (req.body.sort && req.body.sort !== 'relevance') {
 			if (req.body.sort === 'oldest')
-				sort._id = 1;
+				sort.createdAt = 1;
 			else if (req.body.sort === 'likes') {
 				sort.likes = -1;
-				sort._id = -1;
+				sort.createdAt = -1;
 			} else
-				sort._id = -1;
+				sort.createdAt = -1;
 		}
 
 		let query = this.database.Image.find(options).sort(sort);
@@ -101,7 +101,7 @@ class ImageSearchPOST {
 		}
 
 		// Max limit of 50
-		let limit = typeof req.body.limit === 'number' && req.body.limit < 50 ? req.body.limit : 20;
+		let limit = typeof req.body.limit === 'number' && req.body.limit <= 50 ? req.body.limit : 20;
 
 		return res.status(200).send({
 			images: await query.select(projection).limit(limit).lean().exec()
