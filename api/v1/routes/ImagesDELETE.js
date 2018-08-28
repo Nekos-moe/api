@@ -19,7 +19,8 @@ class ImagesDELETE {
 	}
 
 	async run(req, res) {
-		let image = await this.database[req.body.pending ? 'PendingImage' : 'Image'].findOne({ id: req.params.id });
+		const pending = req.query.pending === 'true';
+		let image = await this.database[pending ? 'PendingImage' : 'Image'].findOne({ id: req.params.id });
 		if (!image)
 			return res.status(404).send({ message: 'Image not found' });
 
@@ -31,7 +32,7 @@ class ImagesDELETE {
 		// Delete image from MongoDB
 		await image.remove();
 
-		if (!req.body.pending) {
+		if (!pending) {
 			let uploader = req.user;
 			if (image.uploader.id !== req.user.id)
 				uploader = await this.database.User.findOne({ id: image.uploader.id });

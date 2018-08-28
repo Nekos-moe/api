@@ -6,9 +6,6 @@
 		"es6": true,
 		"node": true
 	},
-	"ecmaFeatures": {
-		"modules": true
-	},
 	"extends": "eslint:recommended",
 	"rules": {
 		"no-console": 0,

@@ -27,8 +27,8 @@ class PostSuggestionPOST {
 			.map(t => t.replace(/, *|_+| {2,}/g, ' ').toLowerCase()) // Replace extra spacing and remove commas
 			.filter(t => t !== '' && t.trim() !== ''); // Remove empty tags
 
-		if (tags.length > 80)
-			return { message: 'A post can only have up to 80 tags' };
+		if (tags.length > 120)
+			return { message: 'A post can only have up to 120 tags' };
 
 		if (tags.find(t => t.length > 50))
 			return { message: 'Tags have a maximum length of 50 characters' };

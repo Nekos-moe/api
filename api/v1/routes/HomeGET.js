@@ -8,24 +8,9 @@ class HomeGET {
 	}
 
 	async run(req, res) {
-		return res.status(200).send({
-			endpoints: {
-				"GET /": "<- You are here",
-				"POST /register": "Create an unverified account",
-				"GET /register/verify/:key": "Verify an account",
-				"POST /register/resend": "Resend a verification email",
-				"POST /auth": "Get token from username and password",
-				"POST /auth/regen": "Reset an account's token",
-				"PATCH /account/password": "Edit account password",
-				"GET /images/:id": "Get an image",
-				"PATCH /images/:id": "Update an image's metadata",
-				"DELETE /images/:id": "Delete an image",
-				"POST /images": "Upload a catgirl",
-				"POST /images/search": "Search images",
-				"GET /users/:id": "Get a user or @me"
-			},
-			version: 1,
-			releaseWhen: "SoonTM"
+		return res.status(200).json({
+			docs: 'https://docs.nekos.moe/',
+			version: 1
 		});
 	}
 }
