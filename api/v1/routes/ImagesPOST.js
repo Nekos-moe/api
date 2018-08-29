@@ -68,8 +68,8 @@ class ImagesPOST {
 						.filter(t => t !== '' && t.trim() !== ''); // Remove empty tags
 				}
 
-				if (req.body.tags.length > 80)
-					return res.status(400).send({ message: 'A post can only have up to 80 tags' });
+				if (req.body.tags.length > 120)
+					return res.status(400).send({ message: 'A post can only have up to 120 tags' });
 
 				if (req.body.tags.find(t => t.length > 50))
 					return res.status(400).send({ message: 'Tags have a maximum length of 50 characters' });
@@ -163,8 +163,8 @@ class ImagesPOST {
 							artist: image.artist,
 							nsfw: image.nsfw
 						},
-						image_url: `https://nekos.brussell.me/image/${filename}.jpg`,
-						post_url: `https://nekos.brussell.me/post/${filename}`
+						image_url: `https://nekos.moe/image/${filename}.jpg`,
+						post_url: `https://nekos.moe/post/${filename}`
 					});
 				}).catch(error => {
 					console.error(error);

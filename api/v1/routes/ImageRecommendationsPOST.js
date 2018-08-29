@@ -4,9 +4,9 @@ function escapeRegExp(str) {
 	return str.replace(/[-[\]/{}()*+?.\\^$|]/g, "\\$&");
 }
 
-class ImageSearchPOST {
+class ImageRecommendationsPOST {
 	constructor(controller) {
-		this.path = '/images/search';
+		this.path = '/images/recommended';
 		this.router = controller.router;
 		this.database = controller.database;
 
@@ -23,16 +23,8 @@ class ImageSearchPOST {
 		if (!req.body)
 			return res.status(400).send({ message: 'No body' });
 
-		// If searching by ID skip search
-		if (req.body.id) {
-			return res.status(200).send({
-				images: await this.database.Image.find({ id: req.body.id }).select('-_id -__v').lean().exec()
-			});
-		}
-
-		let options = { },
-			projection = { '_id': 0, '__v': 0 },
-			sort = { };
+		const options = { tags: { } };
+		const sort = { };
 
 		// Add query options to the mongoose find query.
 		if (req.body.nsfw !== undefined)
@@ -50,35 +42,20 @@ class ImageSearchPOST {
 		}
 
 		if (req.body.artist) {
-			// Sometimes artist has an alternate name in ()
+			// Sometimes artist has an alternate name or group name in ()
 			// This allows users to search by using either name.
 			options.artist = new RegExp(`(?:\\(|^)${escapeRegExp(req.body.artist)} *(?:\\)|$|\\(|)`, 'i');
 		}
 
-		if (Array.isArray(req.body.tags))
-			req.body.tags = req.body.tags.join(', ');
+		if (Array.isArray(req.body.tags) && req.body.tags.length !== 0) {
+			if (Array.isArray(req.body.blacklist) && req.body.blacklist.length !== 0)
+				options.tags.$nin = req.body.blacklist;
 
-		if (req.body.tags !== undefined && req.body.tags.trim() !== '') {
-			/* What we are doing here is bypassing a mongodb $text restriction.
-			 * If you only include negate expressions then nothing will match so
-			 * we turn it into a $not regex that matches negated tags and returns
-			 * the rest. This is needed for tag blacklists.
-			*/
-			if (req.body.tags.split(/-"?[^",]+"?(?:, *)?/).join('').trim() === '') {
-				options.tags = {
-					$nin: req.body.tags.match(/(^|, *)-[^,]+/g).map(e => e.replace(/,? *-|"/g, ''))
-				};
-			} else {
-				options.$text = { $search: req.body.tags };
+			options.tags.$in = req.body.tags;
+		} else
+			return res.status(400).send({ message: 'Unable to return recommendations when an array of tags is not given' });
 
-				if (req.body.sort && req.body.sort === 'relevance') {
-					projection.score = { $meta: 'textScore' };
-					sort.score = { $meta: 'textScore' };
-				}
-			}
-		}
-
-		if (req.body.sort && req.body.sort !== 'relevance') {
+		if (req.body.sort) {
 			if (req.body.sort === 'oldest')
 				sort.createdAt = 1;
 			else if (req.body.sort === 'likes') {
@@ -88,11 +65,12 @@ class ImageSearchPOST {
 				sort.createdAt = -1;
 		}
 
-		let query = this.database.Image.find(options).sort(sort);
+		const query = this.database.Image.find(options).sort(sort);
 		if (req.body.posted_before !== undefined)
 			query.lt('createdAt', req.body.posted_before);
 		if (req.body.posted_after !== undefined)
 			query.gt('createdAt', req.body.posted_after);
+
 		if (typeof req.body.skip === 'number' && req.body.skip >= 0) {
 			if (req.body.skip > 2500)
 				return res.status(400).send({ message: 'Cannot skip more than 2,500 images' });
@@ -101,12 +79,12 @@ class ImageSearchPOST {
 		}
 
 		// Max limit of 50
-		let limit = typeof req.body.limit === 'number' && req.body.limit <= 50 ? req.body.limit : 20;
+		const limit = typeof req.body.limit === 'number' && req.body.limit < 50 ? req.body.limit : 20;
 
 		return res.status(200).send({
-			images: await query.select(projection).limit(limit).lean().exec()
+			images: await query.select({ '_id': 0, '__v': 0 }).limit(limit).lean()
 		});
 	}
 }
 
-module.exports = ImageSearchPOST;
+module.exports = ImageRecommendationsPOST;
