@@ -24,7 +24,7 @@ class ImagesDELETE {
 		if (!image)
 			return res.status(404).send({ message: 'Image not found' });
 
-		if (req.user.id !== image.uploader.id && !req.user.roles || !req.user.roles.includes('admin'))
+		if (req.user.id !== image.uploader.id && (!req.user.roles || !req.user.roles.includes('admin')))
 			return res.status(403).send({ message: 'You are not the uploader of this image' });
 
 		fs.unlinkSync(`${__dirname}/../../../image/${image.id}.jpg`);

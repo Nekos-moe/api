@@ -1,7 +1,7 @@
 {
-	"name": "catgirls-api",
-	"version": "0.28.0",
-	"description": "An API for neko lovers.",
+	"name": "nekos-api",
+	"version": "0.28.1",
+	"description": "An API for Nekos.moe.",
 	"private": true,
 	"main": "server.js",
 	"scripts": {

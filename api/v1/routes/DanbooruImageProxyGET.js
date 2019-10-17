@@ -19,6 +19,9 @@ class DanbooruImageProxy {
 	}
 
 	async run(req, res) {
+		if (req.headers.referer !== 'https://nekos.moe/upload')
+			return res.sendStatus(403);
+
 		if (!req.query.url || !/^https?:\/\/\w+\.donmai\.us\//.test(req.query.url))
 			return res.status(400).send({ message: 'Valid danbooru URL required' });
 

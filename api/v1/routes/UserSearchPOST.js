@@ -26,9 +26,10 @@ class UserSearchPOST {
 
 			let resp;
 
+			// TODO: Verify that limit is positive
 			if (typeof req.body.query === 'string' && req.body.query) {
 				resp = await this.database.User.find({ username: new RegExp(escapeRegExp(req.body.query), 'i'), verified: true })
-					.sort({ likesReceived: -1, favoritesReceived: -1 }).select('-_id -__v').lean().exec();
+					.sort({ likesReceived: -1, favoritesReceived: -1 }).select('-_id -__v -savedTags -favorites -likes -verified').lean().exec();
 
 				resp.sort((a, b) => (a.username.length - req.body.query.length) - (b.username.length - req.body.query.length));
 
@@ -44,7 +45,7 @@ class UserSearchPOST {
 
 				query.limit(typeof req.body.limit === 'number' && req.body.limit < 100 ? req.body.limit : 20);
 
-				resp = await query.select('-_id -__v').lean().exec();
+				resp = await query.select('-_id -__v -savedTags -favorites -likes -verified').lean().exec();
 			}
 
 			return res.status(200).send({ users: resp });
