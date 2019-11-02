@@ -10,7 +10,7 @@
 		"dev": "cross-env NODE_ENV=development node server.js"
 	},
 	"dependencies": {
-		"axios": "^0.18.0",
+		"axios": "^0.18.1",
 		"bcrypt": "^3.0.0",
 		"body-parser": "^1.18.2",
 		"connect-datadog": "^0.0.6",
