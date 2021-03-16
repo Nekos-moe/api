@@ -1,31 +1,51 @@
-const express = require('express'),
-	app = express(),
-	bodyParser = require('body-parser'),
-	morgan = require('morgan'),
-	toml = require('toml'),
-	fs = require('fs'),
-	settings = toml.parse(fs.readFileSync('./settings.toml')),
-	Database = require('./structures/Database'),
-	mailTransport = require('./structures/mailTransport'),
-	webhookTransport = require('./structures/webhookTransport'),
-	db = new Database(settings.mongo),
-	raven = require('raven');
+const express = require('express');
+const app = express();
+const morgan = require('morgan');
+const toml = require('toml');
+const fs = require('fs');
+const settings = toml.parse(fs.readFileSync('./settings.toml'));
+const Database = require('./structures/Database');
+const mailTransport = require('./structures/mailTransport');
+const webhookTransport = require('./structures/webhookTransport');
+const db = new Database(settings.mongo);
+const sentry = require('@sentry/node');
+const hotShots = require('hot-shots');
 
 mailTransport.config({ from: settings.email.from, test: settings.email.test });
 webhookTransport.config(settings.webhooks);
 
 if (process.env.NODE_ENV === 'production') {
-	raven.disableConsoleAlerts();
-	raven.config(settings.raven.url, {
+	sentry.init({
+		dsn: settings.raven.url,
 		release: (require('./package.json')).version,
-		autoBreadcrumbs: { 'http': true },
-		captureUnhandledRejections: true
-	}).install();
+		attachStacktrace: true,
+		maxBreadcrumbs: 50,
+		beforeSend(event) {
+			return process.env.NODE_ENV === 'production' ? event : null;
+		},
+		defaultIntegrations: [
+			new sentry.Integrations.Console(),
+			new sentry.Integrations.Http({
+				breadcrumbs: true,
+				tracing: false
+			}),
+			new sentry.Integrations.OnUncaughtException(),
+			new sentry.Integrations.OnUnhandledRejection()
+		]
+	});
 
-	app.use(raven.requestHandler());
-	app.use(raven.errorHandler());
+	app.use(sentry.Handlers.requestHandler());
 
-	global.statsd = new (require("node-dogstatsd")).StatsD(settings.statsd.host, settings.statsd.port);
+	new hotShots({
+		host: settings.statsd.host,
+		port: settings.statsd.port,
+		prefix: 'catgirls',
+		globalize: true,
+		cacheDNS: true,
+		errorHandler(error) {
+			captureError('[hot-shots]', error);
+		}
+	});
 
 	var datadog = require('connect-datadog')({
 		dogstatsd: statsd,
@@ -37,7 +57,7 @@ if (process.env.NODE_ENV === 'production') {
 
 	app.use(datadog);
 } else {
-	global.statsd = new Proxy({ }, {
+	statsd = new Proxy({ }, {
 		get() { return function() { } }
 	});
 }
@@ -50,8 +70,8 @@ app.use(morgan(':req[cf-connecting-ip] :method :url :status :response-time[0]ms'
 	skip: (req, res) => res.statusCode < 400 // Only log failed requests/responses
 }));
 // Parse data into req.body
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // In dev we need a way to get images
 if (process.env.NODE_ENV === 'development') {
@@ -71,9 +91,13 @@ app.use((req, res, next) => {
 let apiv1 = new (require('./api/v1/Router.js'))(settings, db, mailTransport, webhookTransport);
 app.use(apiv1.path, apiv1.router);
 
+if (process.env.NODE_ENV === 'production')
+	app.use(sentry.Handlers.errorHandler());
+
 // Start the express server
 app.listen(settings.port, error => {
 	if (error)
-		return console.log(error)
+		return console.log(error);
+
 	console.log('Server online');
 });

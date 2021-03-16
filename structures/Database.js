@@ -1,7 +1,5 @@
-const Mongoose = require('mongoose'),
-	Schema = Mongoose.Schema;
-
-Mongoose.Promise = global.Promise;
+const Mongoose = require('mongoose');
+const Schema = Mongoose.Schema;
 
 const userSchema = new Schema({
 	id: { type: String, unique: true, index: { unique: true }, required: true },
@@ -67,12 +65,13 @@ pendingImageSchema.index({ tags: 'text' }, { default_language: 'none' });
 
 class Database {
 	constructor(settings) {
-		this.db = Mongoose.createConnection(`mongodb://localhost:${settings.port}/${settings.db}`, {
-			user: settings.user,
-			pass: settings.pass,
-			auth: { authdb: 'admin' },
-			useNewUrlParser: true
+		this.db = Mongoose.createConnection(`mongodb://${settings.user}:${settings.pass}@localhost:${settings.port}/${settings.db}?authSource=admin`, {
+			useNewUrlParser: true,
+			useUnifiedTopology: true,
+			useCreateIndex: true,
+			useFindAndModify: false
 		});
+
 		this.User = this.db.model('User', userSchema);
 		this.VerifyKey = this.db.model('VerifyKey', verifyKeySchema);
 		this.Image = this.db.model('Image', imageSchema);
@@ -80,9 +79,7 @@ class Database {
 		this.PostSuggestion = this.db.model('PostSuggestion', postSuggestionSchema);
 
 		this.db.on('error', console.error.bind(console, 'Mongoose error:'));
-		this.db.on('open', async () => {
-			console.log('Mongoose Connected');
-		});
+		this.db.on('open', async () => console.log('Mongoose Connected'));
 	}
 }
 

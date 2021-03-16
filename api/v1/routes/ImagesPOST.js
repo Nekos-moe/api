@@ -101,19 +101,31 @@ class ImagesPOST {
 			let filename = shortid.generate();
 
 			await sharp(req.file.buffer)
-				.resize(360, 420)
-				.max()
-				.withoutEnlargement()
-				.background({ r: 255, g: 255, b: 255, alpha: 1 })
+				.resize(360, 420, {
+					fit: 'inside',
+					withoutEnlargement: true,
+					background: {
+						r: 255,
+						g: 255,
+						b: 255,
+						alpha: 1
+					}
+				})
 				.flatten()
 				.jpeg({ quality: this.thumbnailSaveQuality })
 				.toFile(`${__dirname}/../../../thumbnail/${filename}.jpg`);
 
 			return sharp(req.file.buffer)
-				.resize(this.imageMaxWidth, this.imageMaxHeight)
-				.max()
-				.withoutEnlargement()
-				.background({ r: 255, g: 255, b: 255, alpha: 1 })
+				.resize(this.imageMaxWidth, this.imageMaxHeight, {
+					fit: 'inside',
+					withoutEnlargement: true,
+					background: {
+						r: 255,
+						g: 255,
+						b: 255,
+						alpha: 1
+					}
+				})
 				.flatten()
 				.jpeg({ quality: this.imageSaveQuality })
 				.toFile(`${__dirname}/../../../image/${filename}.jpg`)

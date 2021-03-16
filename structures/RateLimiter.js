@@ -1,6 +1,6 @@
 class RateLimiter {
 	constructor(options) {
-		this.options = Object.assign({}, {
+		this.options = Object.assign({ }, {
 			windowMS: 10 * 1000,
 			max: 20,
 			message : 'Too many requests, please try again later ニャー.',
@@ -18,8 +18,9 @@ class RateLimiter {
 			}
 		}, options); // Overwrite defaults with options
 
+		options = this.options; // Needed for the inside of store to access options
 		this.store = {
-			requests: {},
+			requests: { },
 			reset: Date.now() + options.windowMS,
 			incr(key) {
 				if (this.requests[key]) {
@@ -41,12 +42,14 @@ class RateLimiter {
 				delete this.requests[key];
 			},
 			resetAll(options) {
-				this.requests = {};
+				this.requests = { };
 				this.reset = Date.now() + options.windowMS;
 			}
 		}
 
-		setInterval(() => this.store.resetAll(this.options), this.options.windowMS);
+		setInterval(() => {
+			this.store.resetAll(this.options);
+		}, this.options.windowMS);
 	}
 
 	limit(req, res, next) {
@@ -60,11 +63,13 @@ class RateLimiter {
 			key,
 			requests,
 			limit: this.options.max,
-			remaining: Math.max(this.options.max - requests, 0)
+			remaining: Math.max(this.options.max - requests, 0),
+			reset: this.store.reset
 		}
 
 		res.set('X-RateLimit-Limit', req.rateLimit.limit);
 		res.set('X-RateLimit-Remaining', req.rateLimit.remaining);
+		res.set('X-RateLimit-Reset', req.rateLimit.reset);
 
 		if (this.options.max && requests > this.options.max)
 			return this.options.handler(this.store, req, res);
@@ -80,6 +85,7 @@ class RateLimiter {
 
 		res.set('X-RateLimit-Limit', req.rateLimit.limit);
 		res.set('X-RateLimit-Remaining', req.rateLimit.remaining);
+		res.set('X-RateLimit-Reset', req.rateLimit.reset);
 
 		return;
 	}

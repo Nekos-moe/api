@@ -28,7 +28,7 @@ class APIv1 {
 			if (!req.headers['user-agent'])
 				return next();
 
-			statsd.increment('catgirls.express.useragents', 1, ['ua:' + req.headers['user-agent'].replace(/,/g, ''), 'route:' + req.path.replace('/api/v1', ''), 'method:' + req.method]);
+			statsd.increment('express.useragents', 1, ['ua:' + req.headers['user-agent'].replace(/,/g, ''), 'route:' + req.path.replace('/api/v1', ''), 'method:' + req.method]);
 			return next();
 		});
 	}
