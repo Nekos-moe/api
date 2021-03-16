@@ -43,7 +43,8 @@ if (process.env.NODE_ENV === 'production') {
 		globalize: true,
 		cacheDNS: true,
 		errorHandler(error) {
-			captureError('[hot-shots]', error);
+			console.error('[hot-shots]', error);
+			sentry.captureException(error);
 		}
 	});
 

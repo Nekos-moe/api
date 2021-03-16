@@ -15,6 +15,7 @@
 		"bcrypt": "^5.0.1",
 		"connect-datadog": "^0.0.9",
 		"cross-env": "*",
+		"eslint": "^7.22.0",
 		"express": "^4.17.1",
 		"hot-shots": "^8.3.0",
 		"md5": "^2.3.0",
