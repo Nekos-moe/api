@@ -39,7 +39,6 @@ if (process.env.NODE_ENV === 'production') {
 	new hotShots({
 		host: settings.statsd.host,
 		port: settings.statsd.port,
-		prefix: 'catgirls',
 		globalize: true,
 		cacheDNS: true,
 		errorHandler(error) {
@@ -58,7 +57,7 @@ if (process.env.NODE_ENV === 'production') {
 
 	app.use(datadog);
 } else {
-	statsd = new Proxy({ }, {
+	global.statsd = new Proxy({ }, {
 		get() { return function() { } }
 	});
 }
