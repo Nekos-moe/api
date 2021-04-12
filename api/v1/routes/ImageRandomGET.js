@@ -18,7 +18,9 @@ class ImageRandomGET {
 	async run(req, res) {
 		let agg = this.database.Image.aggregate().cursor({ });
 
-		let options = {};
+		let options = {},
+			projection = { '_id': 0, '__v': 0 },
+			sort = { };
 
 		if (req.query.nsfw !== undefined)
 			options.nsfw = ['true','True',true].includes(req.query.nsfw);
