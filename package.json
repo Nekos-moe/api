@@ -28,5 +28,9 @@
 		"toml": "^2.3.3"
 	},
 	"author": "brussell98",
-	"license": "MIT"
+	"license": "MIT",
+	"repository": {
+    		"type": "git",
+    		"url": "git+https://github.com/Nekos-moe/api.git"
+  	}
 }
