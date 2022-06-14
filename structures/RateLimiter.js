@@ -3,7 +3,7 @@ class RateLimiter {
 		this.options = Object.assign({ }, {
 			windowMS: 10 * 1000,
 			max: 20,
-			message : 'Too many requests, please try again later ニャー.',
+			message : 'Too many requests, please try again later nyaa~',
 			statusCode: 429,
 			keyGenerator(req) {
 				return req.ip;

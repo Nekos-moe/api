@@ -23,7 +23,7 @@ class AuthRegenPOST {
 		req.user.token = crypto.randomBytes(32 / 2).toString('hex').slice(0, 32);
 		await req.user.save();
 
-		return res.sendSatus(204);
+		return res.sendStatus(204);
 	}
 }
 

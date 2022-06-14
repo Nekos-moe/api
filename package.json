@@ -1,6 +1,6 @@
 {
 	"name": "nekos-api",
-	"version": "0.29.1",
+	"version": "0.29.3",
 	"description": "The API for Nekos.moe.",
 	"private": true,
 	"main": "server.js",

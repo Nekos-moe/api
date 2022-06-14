@@ -29,7 +29,7 @@ class ImageRelationshipPATCH {
 		let uploader = await this.database.User.findOne({ id: image.uploader.id });
 
 		if (req.body.type === 'like') {
-			if (req.body.create === true) {
+			if (req.body.create === true && !req.user.likes.includes(image.id)) {
 				image.likes++;
 				uploader.likesReceived++;
 				req.user.likes.push(image.id);
@@ -51,7 +51,7 @@ class ImageRelationshipPATCH {
 		}
 
 		if (req.body.type === 'favorite') {
-			if (req.body.create === true) {
+			if (req.body.create === true && !req.user.favorites.includes(image.id)) {
 				image.favorites++;
 				uploader.favoritesReceived++;
 				req.user.favorites.push(image.id);

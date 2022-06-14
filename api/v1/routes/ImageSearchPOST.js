@@ -66,7 +66,7 @@ class ImageSearchPOST {
 			*/
 			if (req.body.tags.split(/-"?[^",]+"?(?:, *)?/).join('').trim() === '') {
 				options.tags = {
-					$nin: req.body.tags.match(/(^|, *)-[^,]+/g).map(e => e.replace(/,? *-|"/g, ''))
+					$nin: req.body.tags.match(/(^|, *)-[^,]+/g).map(e => e.replace(/^(, *)?-|"/g, ''))
 				};
 			} else {
 				options.$text = { $search: req.body.tags };

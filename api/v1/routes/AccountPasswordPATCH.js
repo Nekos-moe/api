@@ -11,8 +11,8 @@ class AccountPasswordPATCH {
 		this.transporter = controller.transporter;
 		this.authorize = controller.authorize;
 
-		// One per minute because of the computation/tasks required
-		this.rateLimiter = new RateLimiter({ windowMS: 60000, max: 1 });
+		// Two per minute because of the computation/tasks required
+		this.rateLimiter = new RateLimiter({ windowMS: 60_000, max: 2 });
 
 		this.router.patch(
 			this.path,
@@ -28,7 +28,7 @@ class AccountPasswordPATCH {
 			return res.status(401).send({ message: "Password and newPassword required" });
 		}
 
-		if (req.user && !req.user.verified)
+		if (!req.user.verified)
 			return res.status(400).send({ message: "You must verify your email before you can modify your account." });
 
 		// Check if the passwords match
@@ -40,7 +40,7 @@ class AccountPasswordPATCH {
 		if (req.body.newPassword.length < 8 || !/[a-z]/.test(req.body.newPassword) || !/[A-Z]/.test(req.newPody.password) || !/[0-9]/.test(req.newPody.password)) {
 			this.rateLimiter.unlimit(req, res);
 			return res.status(400).send({
-				messsage: 'Your password must be at least 8 characters, have uppercase and lowercase alphabetical letters, and contain numbers.'
+				message: 'Your password must be at least 8 characters, have uppercase and lowercase alphabetical letters, and contain numbers.'
 			});
 		}
 

@@ -7,6 +7,7 @@ const settings = toml.parse(fs.readFileSync('./settings.toml'));
 const Database = require('./structures/Database');
 const mailTransport = require('./structures/mailTransport');
 const webhookTransport = require('./structures/webhookTransport');
+const ApiRouter = require('./api/v1/Router');
 const db = new Database(settings.mongo);
 const sentry = require('@sentry/node');
 const hotShots = require('hot-shots');
@@ -88,8 +89,8 @@ app.use((req, res, next) => {
 });
 
 // Load in the routes for express
-let apiv1 = new (require('./api/v1/Router.js'))(settings, db, mailTransport, webhookTransport);
-app.use(apiv1.path, apiv1.router);
+const api = new ApiRouter(settings, db, mailTransport, webhookTransport);
+app.use(api.path, api.router);
 
 if (process.env.NODE_ENV === 'production')
 	app.use(sentry.Handlers.errorHandler());
@@ -99,5 +100,5 @@ app.listen(settings.port, error => {
 	if (error)
 		return console.log(error);
 
-	console.log('Server online');
+	console.log('Server listening for requests on port', settings.port);
 });

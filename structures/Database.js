@@ -79,7 +79,7 @@ class Database {
 		this.PostSuggestion = this.db.model('PostSuggestion', postSuggestionSchema);
 
 		this.db.on('error', console.error.bind(console, 'Mongoose error:'));
-		this.db.on('open', async () => console.log('Mongoose Connected'));
+		this.db.on('open', () => console.log('Mongoose Connected'));
 	}
 }
 
